@@ -1,6 +1,5 @@
 ## Readme
 
-
 SlugIOT is a remote device management system for small embedded linux systems.
 
 This is the version of code that runs on the client.
