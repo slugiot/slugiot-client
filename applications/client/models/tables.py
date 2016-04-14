@@ -25,7 +25,7 @@ db.define_table('logs',
                 Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
                 Field('modulename'),
                 Field('log_level', 'integer'), #  int, 0 = most important.
-                Field('log_message', 'text'),
+                Field('log_message', 'text')
                 )
 
 db.define_table('outputs',
