@@ -22,22 +22,23 @@ import datetime
 
 
 db.define_table('logs',
-                Field('timestamp', 'datetime', default=datetime.datetime.utcnow()),
-                Field('module'),
-                Field('level', 'integer'), #  int, 0 = most important.
-                Field('message', 'text'),
+                Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
+                Field('modulename'),
+                Field('log_level', 'integer'), #  int, 0 = most important.
+                Field('log_message', 'text')
                 )
 
-db.define_table('output',
-                Field('timestamp', 'datetime', default=datetime.datetime.utcnow()),
-                Field('module'),
+db.define_table('outputs',
+                Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
+                Field('modulename'),
                 Field('name'), # Name of variable
-                Field('value', 'text'), # Json, short please
+                Field('output_value', 'text'), # Json, short please
+                Field('tag')
                 )
 
-db.define_table('values',
-                Field('timestamp', 'datetime', default=datetime.datetime.utcnow()),
-                Field('module'),
+db.define_table('module_values',
+                Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
+                Field('modulename'),
                 Field('name'),  # Name of variable
-                Field('value', 'text'),  # Json, short please
+                Field('module_value', 'text'),  # Json, short please
                 )

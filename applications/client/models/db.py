@@ -82,6 +82,7 @@ auth.settings.reset_password_requires_verification = True
 ######################
 # Logging
 import logging, sys
+from gluon import current
 FORMAT = "%(asctime)s %(levelname)s %(process)s %(thread)s %(funcName)s():%(lineno)d %(message)s"
 logging.basicConfig(stream=sys.stderr)
 logger = logging.getLogger(request.application)
@@ -89,3 +90,5 @@ logger.setLevel(logging.INFO)
 
 # Let's log the request.
 logger.info("====> Request: %r %r %r %r" % (request.env.request_method, request.env.path_info, request.args, request.vars))
+
+current.db = db

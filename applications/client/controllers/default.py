@@ -57,4 +57,10 @@ def call():
     """
     return service()
 
-
+def test_log_message():
+    log_message = request.vars.log_message
+    log_level = request.vars.log_level
+    import procedureapi
+    api = procedureapi.ProcedureApi("Test")
+    api.write_log(log_message, log_level)
+    return response.json({"result" : "done"})
