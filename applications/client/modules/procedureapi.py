@@ -11,7 +11,7 @@ class ProcedureApi():
         param dictionary: Takes dictionary of key/value pairs as input
         """
         db = current.db
-        for key in dictionary.keys():
+        for key,val in dictionary.iteritems():
             val = dictionary[key]
             # Update the key value for this module if it already exists
             db.module_values.update_or_insert((db.module_values.name == key) & (db.module_values.modulename == self.procedure_name),
