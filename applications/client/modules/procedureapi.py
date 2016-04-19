@@ -7,16 +7,17 @@ class ProcedureApi():
         self.procedure_name = procedure_name
 
     def write_value(**dictionary):
-        # This function will be called by the (?)harness team(?) and they will be passing a dictionary as the argument
+    	db = current.db
+    # This function will be called by the (?)harness team(?) and they will be passing a dictionary as the argument
         for key in dictionary:
-            ModuleName = dictionary['module_name']
             ModuleValues = dictionary['module_value']
             VariableName = dictionary['variable_name']
-            TimeStamp = datetime.datetime.utcnow()
-            current.db.module_values.insert(modulename=ModuleName)
-            current.db.module_values.insert(name=VariableName)
-            current.db.module_values.insert(module_value=ModuleValues)
-            current.db.module_values.insert(time_stamp=TimeStamp)
+        TimeStamp = datetime.datetime.utcnow()
+	ModuleName = self.procedure_name
+        db.module_values.insert(modulename=ModuleName,
+				name=VariableName,
+        			module_value=ModuleValues,
+        			time_stamp=TimeStamp)
 
 
     def write_output(self, name, data, tag):
