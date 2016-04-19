@@ -19,7 +19,7 @@ myconf = AppConfig(reload=True)
 
 if not request.env.web2py_runtime_gae:
     ## if NOT running on Google App Engine use SQLite or other DB
-    db = DAL(myconf.get('db.uri'), 
+    db = DAL(myconf.get('db.uri'),
              pool_size = myconf.get('db.pool_size'),
              migrate_enabled = myconf.get('db.migrate'),
              check_reserved = ['all'])
@@ -82,6 +82,7 @@ auth.settings.reset_password_requires_verification = True
 ######################
 # Logging
 import logging, sys
+from gluon import current
 FORMAT = "%(asctime)s %(levelname)s %(process)s %(thread)s %(funcName)s():%(lineno)d %(message)s"
 logging.basicConfig(stream=sys.stderr)
 logger = logging.getLogger(request.application)
@@ -89,3 +90,9 @@ logger.setLevel(logging.INFO)
 
 # Let's log the request.
 logger.info("====> Request: %r %r %r %r" % (request.env.request_method, request.env.path_info, request.args, request.vars))
+
+current.db = db
+
+# Let's get the server URL.
+
+server_url = myconf.get('server.host')
