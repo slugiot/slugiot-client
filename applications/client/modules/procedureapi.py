@@ -6,17 +6,19 @@ class ProcedureApi():
     def __init__(self, procedure_name):
         self.procedure_name = procedure_name
 
-    def write_value(**dictionary):
-    	db = current.db
-        for key in dictionary:
-            ModuleValues = dictionary['module_value']
-            VariableName = dictionary['variable_name']
-        TimeStamp = datetime.datetime.utcnow()
-	ModuleName = self.procedure_name
-        db.module_values.insert(modulename=ModuleName,
-				name=VariableName,
-        			module_value=ModuleValues,
-        			time_stamp=TimeStamp)
+    def write_value(self, dictionary):
+        """ Writes key value pairs into the values table
+        param dictionary: Takes dictionary of key/value pairs as input
+        """
+        db = current.db
+        for key in dictionary.keys():
+            val = dictionary[key]
+            # Update the key value for this module if it already exists
+            db.module_values.update_or_insert((db.module_values.name == key) & (db.module_values.modulename == self.procedure_name),
+                                              time_stamp=datetime.datetime.utcnow(),
+                                              modulename=self.procedure_name,
+                                              name=key,
+                                              module_value=val)
 
 
     def write_output(self, name, data, tag):
@@ -41,6 +43,7 @@ class ProcedureApi():
                        modulename=self.procedure_name,
                        log_level=log_level,
                        log_message=log_text)
+
 
     # todo : schedule tasks for procedure
     def add_schedule(self):
