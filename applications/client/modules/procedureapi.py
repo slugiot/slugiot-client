@@ -8,7 +8,6 @@ class ProcedureApi():
 
     def write_value(**dictionary):
     	db = current.db
-    # This function will be called by the (?)harness team(?) and they will be passing a dictionary as the argument
         for key in dictionary:
             ModuleValues = dictionary['module_value']
             VariableName = dictionary['variable_name']
@@ -21,7 +20,17 @@ class ProcedureApi():
 
 
     def write_output(self, name, data, tag):
-        pass
+        """ This write the values and the tag to the outputs table.
+        param name : This is the name of the output
+         param data : The value of the output
+         Param tag: This is the ID of the sensor (or additional data to differentiate the outputs)"""
+        # todo : Sync with visualization team for Json format
+        db = current.db
+        db.outputs.insert(modulename=self.procedure_name,
+                          name=name,
+                          output_value=data,
+                          time_stamp=datetime.datetime.utcnow(),
+                          tag=tag)
 
     def write_log(self, log_text, log_level=0):
         """Writes a log message to the logs table
