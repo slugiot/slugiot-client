@@ -17,3 +17,28 @@
 
 ## after defining tables, uncomment below to enable auditing
 # auth.enable_record_versioning(db)
+
+import datetime
+
+
+db.define_table('logs',
+                Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
+                Field('modulename'),
+                Field('log_level', 'integer'), #  int, 0 = most important.
+                Field('log_message', 'text')
+                )
+
+db.define_table('outputs',
+                Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
+                Field('modulename'),
+                Field('name'), # Name of variable
+                Field('output_value', 'text'), # Json, short please
+                Field('tag')
+                )
+
+db.define_table('module_values',
+                Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
+                Field('modulename'),
+                Field('name'),  # Name of variable
+                Field('module_value', 'text'),  # Json, short please
+                )
