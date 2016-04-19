@@ -19,7 +19,7 @@ myconf = AppConfig(reload=True)
 
 if not request.env.web2py_runtime_gae:
     ## if NOT running on Google App Engine use SQLite or other DB
-    db = DAL(myconf.get('db.uri'), 
+    db = DAL(myconf.get('db.uri'),
              pool_size = myconf.get('db.pool_size'),
              migrate_enabled = myconf.get('db.migrate'),
              check_reserved = ['all'])
@@ -92,3 +92,7 @@ logger.setLevel(logging.INFO)
 logger.info("====> Request: %r %r %r %r" % (request.env.request_method, request.env.path_info, request.args, request.vars))
 
 current.db = db
+
+# Let's get the server URL.
+
+server_url = myconf.get('server.host')
