@@ -13,11 +13,13 @@ class ProcedureApi():
         pass
 
     def write_log(self, log_text, log_level=0):
-        current.db.logs.insert(time_stamp=datetime.datetime.utcnow())
-
-#                               modulename=self.procedure_name,
-#                               log_level=log_level,
-#                               log_message=log_text)
+        """Writes a log message to the logs table
+        @param log_level """
+        db = current.db
+        db.logs.insert(time_stamp=datetime.datetime.utcnow(),
+                       modulename=self.procedure_name,
+                       log_level=log_level,
+                       log_message=log_text)
 
     # todo : schedule tasks for procedure
     def add_schedule(self):
