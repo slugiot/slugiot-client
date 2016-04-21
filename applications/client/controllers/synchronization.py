@@ -75,3 +75,14 @@ def test_log_message():
     api = procedureapi.ProcedureApi("Test")
     api.write_log(log_message, log_level)
     return response.json({"result" : "done"})
+
+def writing_to_db():
+    current.db.logs.insert(time_stamp=datetime.datetime.utcnow(),modulename="Test",log_level=0,log_message="Writing to database0")
+    current.db.logs.insert(time_stamp=datetime.datetime.utcnow(), modulename="Test", log_level=0,log_message="Writing to database1")
+    current.db.logs.insert(time_stamp=datetime.datetime.utcnow(), modulename="Test", log_level=0,log_message="Writing to database2")
+    return response.json({"result": "done"})
+
+def reading_from_db():
+    for row in db(db.logs.time_stamp > 0).iterselect():
+        print row.log_message,row.time_stamp
+
