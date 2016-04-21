@@ -75,3 +75,32 @@ def test_log_message():
     api = procedureapi.ProcedureApi("Test")
     api.write_log(log_message, log_level)
     return response.json({"result" : "done"})
+
+@request.restful()
+def test_last_synchronized():
+    table_name = "example"
+    def GET(*args, **vars):
+        return __get_last_synchronized(table_name)
+    def POST(*args, **vars):
+        return __set_last_synchronized(table_name, datetime.datetime.utcnow())
+    return locals()
+
+"""
+This function takes in a table_name (logs, outputs, etc) and returns
+the latest timestamp the data was synchronized
+"""
+def __get_last_synchronized(table_name):
+    timestamp =  db(db.synchronization_events.table_name == table_name).select(db.synchronization_events.time_stamp, orderby="time_stamp DESC", limitby=(0, 1))
+    if (not timestamp):
+        return datetime.datetime.fromtimestamp(0)
+    return timestamp[0].time_stamp
+
+"""
+This function takes in a table_name (logs, outputs, etc) and a timestamp
+and inserts a record to store that it was updated.  The timestamp is NOT
+defaulted to datetime.utcnow() because you need to store the timestamp
+from when you retrieved the updates, so updates that occur during a sync
+event are not lost
+"""
+def __set_last_synchronized(table_name, timestamp):
+    db.synchronization_events.insert(table_name=table_name,time_stamp=timestamp)

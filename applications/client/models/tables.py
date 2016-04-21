@@ -42,3 +42,10 @@ db.define_table('module_values',
                 Field('name'),  # Name of variable
                 Field('module_value', 'text'),  # Json, short please
                 )
+
+db.define_table('synchronization_events',
+                Field('table_name'),
+                Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
+                )
+
+
