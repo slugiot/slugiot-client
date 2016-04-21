@@ -13,6 +13,7 @@ class ProcedureApi():
         param dictionary: Takes dictionary of key/value pairs as input
         """
         db = current.db
+	val = json_plus.Serializable().dumps(val)
         for key,val in dictionary.iteritems():
             # Update the key value for this module if it already exists
             db.module_values.update_or_insert((db.module_values.name == key) & (db.module_values.modulename == self.procedure_name),
