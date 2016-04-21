@@ -1,4 +1,6 @@
 import datetime
+import json_plus
+import unittest
 from gluon import current
 
 class ProcedureApi():
@@ -12,7 +14,6 @@ class ProcedureApi():
         """
         db = current.db
         for key,val in dictionary.iteritems():
-            val = dictionary[key]
             # Update the key value for this module if it already exists
             db.module_values.update_or_insert((db.module_values.name == key) & (db.module_values.modulename == self.procedure_name),
                                               time_stamp=datetime.datetime.utcnow(),
@@ -24,10 +25,10 @@ class ProcedureApi():
     def write_output(self, name, data, tag):
         """ This write the values and the tag to the outputs table.
         param name : This is the name of the output
-         param data : The value of the output
+         param data : The value of the output : This is a dictionary of key value pairs
          Param tag: This is the ID of the sensor (or additional data to differentiate the outputs)"""
-        # todo : Sync with visualization team for Json format
         db = current.db
+        data = json_plus.Serializable().dumps(data)
         db.outputs.insert(modulename=self.procedure_name,
                           name=name,
                           output_value=data,
@@ -49,3 +50,14 @@ class ProcedureApi():
     def add_schedule(self):
         pass
 
+
+#class TestProcedureAPI(unittest.TestCase):
+
+#    def test_output(self):
+#       dict = {"temperature": 31, "humidity": 45}
+#        api = ProcedureApi("TestModule23")
+#        api.write_output("Thermostat Readings", dict, "None")
+#        db = current.db
+#        row = db(db.outputs.modulename == "TestModule23").select()
+#       output_val = row[0].output_value
+#        self.assertEqual(dict, json_plus.Serializable().loads(output_val))
