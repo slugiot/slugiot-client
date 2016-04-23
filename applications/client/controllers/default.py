@@ -7,6 +7,7 @@
 ## - user is required for authentication and authorization
 ## - download is for downloading files uploaded in the db (does streaming)
 #########################################################################
+import slugiot_settings
 
 def index():
     """
@@ -22,11 +23,24 @@ def index():
 
 @request.restful()
 def initialization():
+    """
+    This endpoint is used to manage the initialization of the client's
+    device_id.  Making a GET request should detail either what the
+    device_id is, or how to set it.  Making a POST request is how it
+    is actually set.
+
+    Currently, this does not actually call the server to set the value,
+    but that shouldn't be too difficult to manage.
+
+    tpesout: I don't know how to set up a web2py form.  Maybe someone
+    else can do that and use the functionality I added here to actually
+    do it?
+    """
+    if (server_url == None):
+        return "Please configure your server_url field in applications/private/appconfig.ini"
 
     def GET(*args, **vars):
-        if (server_url == None):
-            return "Please configure your server_url field in applications/private/appconfig.ini"
-        device_id = __get_setting_value("device_id")
+        device_id = settings.get_device_id()
         if (device_id == None):
             return "Please POST to this url the desired identifier for your device with the 'device_id' parameter"
         return "Your device_id is: " + device_id
@@ -35,7 +49,7 @@ def initialization():
         if (vars == None or not vars.has_key('device_id')):
             return "Please POST to this url the desired identifier for your device with the 'device_id' parameter"
         device_id = vars['device_id']
-        __set_setting_value("device_id", device_id)
+        settings.set_device_id(device_id)
         return "Your device_id has been set to: " + device_id
 
     return locals()
@@ -80,16 +94,3 @@ def call():
     """
     return service()
 
-def __get_setting_value(setting_name, procedure_id=None, default_value=None):
-    value = db(db.settings.procedure_id == procedure_id).select(db.settings.setting_value, limitby=(0, 1))
-
-    # there should only be one record (if any)
-    for row in value:
-        return row.setting_value
-    # if there were no records
-    return default_value
-
-
-def __set_setting_value(setting_name, setting_value, procedure_id=None):
-    db.settings.update_or_insert(db.settings.setting_name == setting_name and db.settings.procedure_id == procedure_id,
-                                 setting_name=setting_name,setting_value=setting_value,procedure_id=procedure_id)
