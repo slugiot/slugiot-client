@@ -19,7 +19,7 @@ class ProcedureApi():
                                               time_stamp=datetime.datetime.utcnow(),
                                               modulename=self.procedure_name,
                                               name=key,
-                                              module_value==json_plus.Serializable().dumps(val))
+                                              module_value=json_plus.Serializable.dumps(val))
 
 
     def write_output(self, name, data, tag):
@@ -28,7 +28,7 @@ class ProcedureApi():
          param data : The value of the output : This is a dictionary of key value pairs
          Param tag: This is the ID of the sensor (or additional data to differentiate the outputs)"""
         db = current.db
-        data = json_plus.Serializable().dumps(data)
+        data = json_plus.Serializable.dumps(data)
         db.outputs.insert(modulename=self.procedure_name,
                           name=name,
                           output_value=data,
