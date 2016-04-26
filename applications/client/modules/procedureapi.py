@@ -19,7 +19,7 @@ class ProcedureApi():
                                               time_stamp=datetime.datetime.utcnow(),
                                               modulename=self.procedure_name,
                                               name=key,
-                                              module_value=val)
+                                              module_value=json_plus.Serializable().dumps(val))
 
 
     def write_output(self, name, data, tag):
@@ -48,6 +48,11 @@ class ProcedureApi():
 
     # todo : schedule tasks for procedure
     def add_schedule(self):
+        from gluon import current
+        # Add procedure to the db
+        #current.db.insert()
+        current.scheduler1.queue_task(function='recurrun', pargs=["test.py", "method1"], repeats = 5, period = 10, immediate=True, retry_failed=5)
+        current.db.commit()
         pass
 
 

@@ -56,3 +56,21 @@ def call():
     supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv
     """
     return service()
+
+
+def test_log_message():
+    import json_plus
+    log_message = request.vars.log_message
+    log_level = request.vars.log_level
+    import procedureapi
+    api = procedureapi.ProcedureApi("TestModule23")
+    #api.write_log(log_message, log_level)
+    dict = {"temperature": 39, "humidity": 90}
+    api.write_value(dict)
+    #api.write_output("Thermostat Readings", dict, "None")
+    row = db(db.module_values.name == "temperature").select()
+    output_val = row[0].module_value
+    val2 = json_plus.Serializable().loads(output_val)
+    #api.add_schedule()
+
+    return response.json({"result" : val2})
