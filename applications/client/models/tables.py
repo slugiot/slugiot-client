@@ -18,7 +18,20 @@
 ## after defining tables, uncomment below to enable auditing
 # auth.enable_record_versioning(db)
 
-import datetime
+## These tables are synched "up" from the clients to the server.
+
+from datetime import datetime
+
+############### Procedure Harness Table ###############
+
+db.define_table('procedure',
+                Field('procedure_id', 'bigint', required=True),  # key
+                Field('last_update', 'datetime', required=True),
+                Field('procedure_data', 'text', required=True),  # Actual code for procedure - is check IS_LENGTH(65536) ok?
+                # Otherwise use string and specifiy larger length
+                )
+
+############### Procedure API Tables #################
 
 
 db.define_table('settings',
@@ -31,15 +44,15 @@ db.define_table('settings',
 db.define_table('logs',
                 Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
                 Field('modulename'),
-                Field('log_level', 'integer'), #  int, 0 = most important.
+                Field('log_level', 'integer'),  # int, 0 = most important.
                 Field('log_message', 'text')
                 )
 
 db.define_table('outputs',
                 Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
                 Field('modulename'),
-                Field('name'), # Name of variable
-                Field('output_value', 'text'), # Json, short please
+                Field('name'),  # Name of variable
+                Field('output_value', 'text'),  # Json, short please
                 Field('tag')
                 )
 
@@ -54,5 +67,4 @@ db.define_table('synchronization_events',
                 Field('table_name'),
                 Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
                 )
-
 
