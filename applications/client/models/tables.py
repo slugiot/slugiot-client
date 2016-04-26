@@ -34,6 +34,7 @@ db.define_table('procedure',
 ############### Procedure API Tables #################
 
 
+# Synched client -> server
 db.define_table('logs',
                 Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
                 Field('modulename'),
@@ -41,6 +42,7 @@ db.define_table('logs',
                 Field('log_message', 'text')
                 )
 
+# Synched client -> server
 db.define_table('outputs',
                 Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
                 Field('modulename'),
@@ -49,11 +51,12 @@ db.define_table('outputs',
                 Field('tag')
                 )
 
+# Synched client -> server
+# modulename + name is a key (only one row for combination).
 db.define_table('module_values',
                 Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
                 Field('modulename'),
                 Field('name'),  # Name of variable
                 Field('module_value', 'text'),  # Json, short please
                 )
-
 
