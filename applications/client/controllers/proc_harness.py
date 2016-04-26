@@ -6,63 +6,107 @@
 
 from gluon import current
 
-proc_table = db["procedure"]
-device_table = db["device"]
+import requests
+import json
+
+proc_table = db.procedure
+settings_table = db.client_setting
 
 def do_procedure_sync():
-    # 1. Get device id from settings table ?? How do we know what device we are on
-    device_id = db().select(device_table.id)
-    # 2. Get authorization from server for request
-    #   Waiting for other team to implement this method
-    # 3. Request dictionary (of procedure ids and dates) from server
-    server_status = 'http://127.0.0.1:8080/proc_harness/get_procedure_status(device_id)'
-    # 4. Get corresponding dictionary of proc ids and dates from client procedure table
-    client_status = get_procedure_status()
-    # 5. Compare dates by LOOPING through (don't ignore new procs that aren't in client table!)
-    synch_ids = compare_dates(server_status, client_status)
-    # 6. Request full proceudure data for new and newer procs from server; convert to JSON format
-    synch_data = 'http://127.0.0.1:8080/proc_harness/get_procedure_update(synch_ids).json'
-    # 8. Use JSON file as param in function call to update procedures on client
-    insert_new_procedure(synch_data)
-    pass
+    """
+    Perform sync of procedures according to the following protocol:
+        Get all timestamps from server for last stable save of all procedures associated with this device
+        Compare timestamps to timestamps retrieved at last synch and get new procedures
+        Send list of procedure IDs that are needed from server
+        Get updated data from server and save it to local database
+    """
 
-# called to get data from client to compare with dictionary data returned by server
-# assumes that only procs owned by client are stored within client.procedure table.
-# returns a dictionary of the format {procedure_id, last_update}
+    # Get device id from settings table
+    device_id = db().select(settings_table.device_id).first().device_id
+
+    # Get authorization from server for request???
+    #   Waiting for other team to implement this method
+    #   Not sure what to do here if anything
+
+    # Request dictionary {procedure_id: last_updated_date} from server
+    server_url = myconf.get('server.host')
+    call_url = server_url + '/proc_harness/get_procedure_status(' + str(device_id) + ').json'
+    server_status = json.loads(requests.get(call_url))
+
+    # Get corresponding dictionary from client procedure table
+    client_status = get_procedure_status()
+
+    # Compare two dicts to get new procedures or procedures that have been updated
+    synch_ids = compare_dates(server_status, client_status)
+
+    # Request full procedure data for new and updated procedures from server
+    call_url = server_url + '/proc_harness/get_procedure_update(' + json.dumps(synch_ids) + '.json'
+    synch_data = json.loads(requests.get(call_url))
+
+    # Update local data
+    insert_new_procedure(synch_data)
+
+
 def get_procedure_status():
-    # 1. Get all procedure_ids for the device_id
+    """
+    Returns full dictionary of format {procedure_id: last_updated_date} for all procedures on the client
+    last_updated_date comes from server so can be directly compared to dates that come from server
+
+    :return: Dict of the format {procedure_id: last_updated_date}
+    :rtype:
+    """
+
+    # Get all procedure_ids for the device_id
     procedure_ids = db().select(proc_table.procedure_id)
-    # 2. build dictionary containing last_update_stable date for each procedure_id
+
+    # Build dictionary containing last_update_stable date for each procedure_id
     procedure_info = {}
     for proc in procedure_ids:
-        procedure_info[proc.procedure_id] = get_procedure_data(proc, True)
-    # 3. return dictionary
+        pid = proc.procedure_id
+        procedure_info[pid] = db(proc_table.procedure_id == pid).select(proc_table.last_update).first().last_update
+
     return procedure_info
 
-# Pulls proc data from procedure table
-def get_procedure_data(procedure_id):
-    #max = proc_table.last_update.max()
-    #date = db(proc_table.procedure_id == procedure_id).select(max).first()[max]
-    return db(proc_table.procedure_id == procedure_id).select(proc_table.procedure_data).first().procedure_data
 
-def insert_new_procedure(procedure_entries): #not exactly sure what the best way to do this is - pass in an entry from
-    # whatever the server sends or pass in each entry besides sync time?
-    # Need to loop through json data passed as parameter and call on each:
-    proc_table.update_or_insert(procedure_id=proc_id,
-                                     user_id=user_id,
-                                     last_name=last_update,
-                                     proc_name=proc_name,
-                                     proc_data=proc_data
-                                     )
+def insert_new_procedure(procedure_entries, server_status):
+    """
+    Save all procedure code that has been fetched from the server
+    Save original update date that comes from server - this may not correspond exactly to
+        the last update date that is actually connected with this data on the server but it can't be later
+        which is what matters for this synching process
 
-# something like this - we aren't sure how many versions of a procedure we want to keep around
-# we might just keep the latest valid one but we might also need to get the latest one using the date
+    :param procedure_entries: Dict of the format {procedure_id: procedure_data}
+    :type procedure_entries:
+    :param server_status: Dict of the format {procedure_id: last_update_date}
+    :type server_status:
+    """
+
+    for proc, data in procedure_entries.iteritems():
+        proc_table.update_or_insert(procedure_id = proc,
+                                    procedure_data = data,
+                                    last_update = server_status[proc])
+
+
 def compare_dates(server_dict, client_dict):
-    # returns bool that determines if procedures needs to be synced
-    # for item in server_status ...
-    #return db.proc_table(data, procedure_id==procedure_id, valid==True)
-    pass
+    """
+    Determines which procedures need to be fetched from the server by comparing the last updated dates
+        sent from the server to those on the client, and determining which procedures do not yet exist
+        on the client
 
-# the functionality of this will depend on how many versions we want to keep around
-def cleanup_procedure_table(procedure_id):
-    pass
+    :param server_dict: Dict of the format {procedure_id: last_updated_date} for procedures on server for this device
+    :type server_dict:
+    :param client_dict: Dict of the format {procedure_id: last_updated_date} for procedures on this device
+    :type client_dict:
+    :return: List of procedure_ids that should be fetched from the server
+    :rtype: 
+    """
+
+    synch_ids = []
+    for proc, date in server_dict.iteritems():
+        if proc not in client_dict:
+            synch_ids.append(proc)
+        else:
+            if date < client_dict[proc]:
+                synch_ids.append(proc)
+
+    return synch_ids
