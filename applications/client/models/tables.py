@@ -34,6 +34,13 @@ db.define_table('procedure',
 ############### Procedure API Tables #################
 
 
+db.define_table('settings',
+                Field('procedure_id'), # Can be Null for device-wide settings.
+                Field('setting_name'),
+                Field('setting_value'), # Encoded in json-plus.
+                Field('last_updated', 'datetime', default=datetime.datetime.utcnow(), update=datetime.datetime.utcnow())
+                )
+
 db.define_table('logs',
                 Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
                 Field('modulename'),
@@ -56,4 +63,8 @@ db.define_table('module_values',
                 Field('module_value', 'text'),  # Json, short please
                 )
 
+db.define_table('synchronization_events',
+                Field('table_name'),
+                Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
+                )
 

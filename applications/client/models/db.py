@@ -94,5 +94,9 @@ logger.info("====> Request: %r %r %r %r" % (request.env.request_method, request.
 current.db = db
 
 # Let's get the server URL.
-
 server_url = myconf.get('server.host')
+
+# Initialize a settings interface
+import slugiot_settings
+settings = slugiot_settings.SlugIOTSettings()
+
