@@ -7,7 +7,6 @@
 from gluon import current
 
 import requests
-import json
 
 proc_table = db.procedure
 settings_table = db.client_setting
@@ -40,7 +39,7 @@ def do_procedure_sync():
     synch_ids = compare_dates(server_status, client_status)
 
     # Request full procedure data for new and updated procedures from server
-    call_url = server_url + '/proc_harness/get_procedure_update(' + json.dumps(synch_ids) + '.json'
+    call_url = server_url + '/proc_harness/get_procedure_update(' + json.dumps(synch_ids) + ').json'
     synch_data = json.loads(requests.get(call_url))
 
     # Update local data
@@ -98,7 +97,7 @@ def compare_dates(server_dict, client_dict):
     :param client_dict: Dict of the format {procedure_id: last_updated_date} for procedures on this device
     :type client_dict:
     :return: List of procedure_ids that should be fetched from the server
-    :rtype: 
+    :rtype:
     """
 
     synch_ids = []
