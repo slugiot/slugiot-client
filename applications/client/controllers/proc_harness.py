@@ -4,10 +4,12 @@
 ## that actually performs the sync to interact with the tables
 #########################################################################
 
+import subprocess
 from gluon import current
 
 import requests
 
+db = current.db
 proc_table = db.procedure
 settings_table = db.client_setting
 
@@ -20,7 +22,7 @@ def do_procedure_sync():
         Get updated data from server and save it to local database
     """
 
-    # Get device id from settings table
+    # Get device id from settings table - fix this based on Synch group code
     device_id = db().select(settings_table.device_id).first().device_id
 
     # Get authorization from server for request???
@@ -81,9 +83,21 @@ def insert_new_procedure(procedure_entries, server_status):
     """
 
     for proc, data in procedure_entries.iteritems():
+        # Storing procedure data as a file to avoid issues with exec
+        file_name = str(proc) + ".py"
+        with open(file_name, "w") as procedure_file:
+            procedure_file.write(data)
+
+        # Procedure should be run the first time it's entered in the table
+        if db(proc_table.procedure_id == proc).select().first() is None:
+            subprocess.Popen(["python", file_name])
+
         proc_table.update_or_insert(procedure_id = proc,
-                                    procedure_data = data,
-                                    last_update = server_status[proc])
+                                    last_update=server_status[proc])
+
+        #proc_table.update_or_insert(procedure_id = proc,
+        #                            procedure_data = data,
+        #                            last_update = server_status[proc])
 
 
 def compare_dates(server_dict, client_dict):
