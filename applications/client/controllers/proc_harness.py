@@ -5,6 +5,7 @@
 #########################################################################
 
 import subprocess
+import json
 from gluon import current
 
 import requests
@@ -41,8 +42,8 @@ def do_procedure_sync():
     synch_ids = compare_dates(server_status, client_status)
 
     # Request full procedure data for new and updated procedures from server
-    call_url = server_url + '/proc_harness/get_procedure_update(' + json.dumps(synch_ids) + ').json'
-    synch_data = json.loads(requests.get(call_url))
+    call_url = server_url + '/proc_harness/get_procedure_update(' + json.dump(synch_ids) + ').json'
+    synch_data = json.load(requests.get(call_url))
 
     # Update local data
     insert_new_procedure(synch_data)
