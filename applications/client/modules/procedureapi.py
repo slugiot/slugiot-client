@@ -19,7 +19,7 @@ class ProcedureApi():
                                               time_stamp=datetime.datetime.utcnow(),
                                               modulename=self.procedure_name,
                                               name=key,
-                                              module_value=json_plus.Serializable().dumps(val))
+                                              module_value=json_plus.Serializable.dumps(val))
 
 
     def write_output(self, name, data, tag):
@@ -28,7 +28,7 @@ class ProcedureApi():
          param data : The value of the output : This is a dictionary of key value pairs
          Param tag: This is the ID of the sensor (or additional data to differentiate the outputs)"""
         db = current.db
-        data = json_plus.Serializable().dumps(data)
+        data = json_plus.Serializable.dumps(data)
         db.outputs.insert(modulename=self.procedure_name,
                           name=name,
                           output_value=data,
@@ -47,13 +47,25 @@ class ProcedureApi():
 
 
     # todo : schedule tasks for procedure
-    def add_schedule(self):
+    def add_schedule(self,
+                     method,
+                     start_time=datetime.datetime.utcnow(),
+                     stop_time=None,
+                     timeout=60,
+                     prevent_drift=False,
+                     period=60,
+                     immediate=False,
+                     repeats = 1,
+                     retry_failed=5):
+
         from gluon import current
-        # Add procedure to the db
-        #current.db.insert()
-        current.scheduler1.queue_task(function='recurrun', pargs=["test.py", "method1"], repeats = 5, period = 10, immediate=True, retry_failed=5)
-        current.db.commit()
-        pass
+        current.slugiot_scheduler.queue_task(
+            function='rerun_procedure',
+            pargs=[self.procedure_name, method],
+            repeats = repeats,
+            period = period,
+            immediate=immediate,
+            retry_failed=retry_failed)
 
 
 #class TestProcedureAPI(unittest.TestCase):

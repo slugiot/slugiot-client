@@ -1,17 +1,12 @@
 # Web2py Scheduler
 
-def run_procedure(args):
-    # Call the procedure again
-    #procedure_name = args[0]
-    # Need to get the latest version of the procedure
-    # If the procedure is present in the predetermined location, run it
-    # Otherwise we may need to get the procedure from the DB (?)
-    import time
-    print(time.ctime())
-    print("blah")
-    logger.error("time: " + time.ctime())
+def run_procedure(procedure_name, method):
+    proc = __import__(procedure_name)
+    methodToCall = getattr(proc, method)
+    result = methodToCall()
+    logger.info("--------result from procedure call: " + result + "------------")
     pass
 
 
 from gluon.scheduler import Scheduler
-current.scheduler1 = Scheduler(db, dict(recurrun=run_procedure))
+current.slugiot_scheduler = Scheduler(db, dict(rerun_procedure=run_procedure))
