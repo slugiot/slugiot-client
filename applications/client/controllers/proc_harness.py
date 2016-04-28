@@ -4,7 +4,6 @@
 ## that actually performs the sync to interact with the tables
 #########################################################################
 
-import subprocess
 import procedureapi as api
 import json
 from gluon import current
@@ -96,21 +95,13 @@ def insert_new_procedure(procedure_data, procedure_names, server_status):
             procedure_file.write(data)
 
         # When procedures get updated old schedules should be removed so new schedules can be scheduled
-
-        # Procedure should be run the first time it's entered in the table
-        if db(proc_table.procedure_id == proc).select().first() is None:
-            #subprocess.Popen(["python", file_name])
-            api_obj = api.ProcedureApi(file_name)
-            api_obj.add_schedule("run", repeats = 1, period = 0)
-
+        api_obj = api.ProcedureApi(name)
+        api_obj.remove_all_schedules()
+        api_obj.add_schedule("run", repeats=1)
 
         proc_table.update_or_insert(procedure_id = proc,
                                     last_update = server_status[proc],
                                     name = name)
-
-        #proc_table.update_or_insert(procedure_id = proc,
-        #                            procedure_data = data,
-        #                            last_update = server_status[proc])
 
 
 def compare_dates(server_dict, client_dict):
