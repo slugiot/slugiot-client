@@ -5,6 +5,7 @@
 #########################################################################
 
 import subprocess
+import procedureapi as api
 import json
 from gluon import current
 
@@ -42,11 +43,14 @@ def do_procedure_sync():
     synch_ids = compare_dates(server_status, client_status)
 
     # Request full procedure data for new and updated procedures from server
-    call_url = server_url + '/proc_harness/get_procedure_update(' + json.dump(synch_ids) + ').json'
-    synch_data = json.load(requests.get(call_url))
+    call_url_data = server_url + '/proc_harness/get_procedure_data(' + json.dump(synch_ids) + ').json'
+    call_url_names = server_url + '/proc_harness/get_procedure_names(' + json.dump(synch_ids) + ').json'
+
+    synch_data = json.load(requests.get(call_url_data))
+    synch_names = json.load(requests.get(call_url_names))
 
     # Update local data
-    insert_new_procedure(synch_data)
+    insert_new_procedure(synch_data, synch_names, server_status)
 
 
 def get_procedure_status():
@@ -70,7 +74,7 @@ def get_procedure_status():
     return procedure_info
 
 
-def insert_new_procedure(procedure_entries, server_status):
+def insert_new_procedure(procedure_data, procedure_names, server_status):
     """
     Save all procedure code that has been fetched from the server
     Save original update date that comes from server - this may not correspond exactly to
@@ -83,18 +87,26 @@ def insert_new_procedure(procedure_entries, server_status):
     :type server_status:
     """
 
-    for proc, data in procedure_entries.iteritems():
+    for proc, name in procedure_names.iteritems():
+        data = procedure_data[proc]
+
         # Storing procedure data as a file to avoid issues with exec
-        file_name = str(proc) + ".py"
+        file_name = "../modules/" + str(name) + ".py"
         with open(file_name, "w") as procedure_file:
             procedure_file.write(data)
 
+        # When procedures get updated old schedules should be removed so new schedules can be scheduled
+
         # Procedure should be run the first time it's entered in the table
         if db(proc_table.procedure_id == proc).select().first() is None:
-            subprocess.Popen(["python", file_name])
+            #subprocess.Popen(["python", file_name])
+            api_obj = api.ProcedureApi(file_name)
+            api_obj.add_schedule("run", repeats = 1, period = 0)
+
 
         proc_table.update_or_insert(procedure_id = proc,
-                                    last_update=server_status[proc])
+                                    last_update = server_status[proc],
+                                    name = name)
 
         #proc_table.update_or_insert(procedure_id = proc,
         #                            procedure_data = data,
