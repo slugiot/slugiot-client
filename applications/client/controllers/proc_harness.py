@@ -9,7 +9,7 @@ import json
 from gluon import current
 
 import requests
-
+from json_plus import Serializable
 db = current.db
 proc_table = db.procedure
 settings_table = db.client_setting
@@ -32,8 +32,8 @@ def do_procedure_sync():
 
     # Request dictionary {procedure_id: last_updated_date} from server
     server_url = myconf.get('server.host')
-    call_url = server_url + '/proc_harness/get_procedure_status(' + str(device_id) + ').json'
-    server_status = json.loads(requests.get(call_url))
+    call_url = server_url + '/proc_harness/get_procedure_status/' + str(device_id) + '.json'
+    server_status = Serializable.loads(requests.get(call_url))
 
     # Get corresponding dictionary from client procedure table
     client_status = get_procedure_status()
@@ -42,11 +42,11 @@ def do_procedure_sync():
     synch_ids = compare_dates(server_status, client_status)
 
     # Request full procedure data for new and updated procedures from server
-    call_url_data = server_url + '/proc_harness/get_procedure_data(' + json.dump(synch_ids) + ').json'
-    call_url_names = server_url + '/proc_harness/get_procedure_names(' + json.dump(synch_ids) + ').json'
+    call_url_data = server_url + '/proc_harness/get_procedure_data(' + Serializable.dump(synch_ids) + ').json'
+    call_url_names = server_url + '/proc_harness/get_procedure_names(' + Serializable.dump(synch_ids) + ').json'
 
-    synch_data = json.load(requests.get(call_url_data))
-    synch_names = json.load(requests.get(call_url_names))
+    synch_data = Serializable.loads(json.load(requests.get(call_url_data)))
+    synch_names = Serializable.loads(json.load(requests.get(call_url_names)))
 
     # Update local data
     insert_new_procedure(synch_data, synch_names, server_status)
