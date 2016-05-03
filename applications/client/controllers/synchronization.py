@@ -34,8 +34,8 @@ def writing_to_db():
     current.db.logs.insert(time_stamp=datetime.datetime.utcnow(), modulename="Test", log_level=0,log_message="Writing to database2")
     return response.json({"result": "done"})
 
-def reading_from_db():
-    for row in db(db.logs.time_stamp > 0).iterselect():
+def reading_from_db(table_name_db,time_to_sync):
+    for row in db(db.table_name == table_name).iterselect(db.table_name):
         print row.log_message,row.time_stamp
 
 @request.restful()
@@ -47,10 +47,16 @@ def test_last_synchronized():
         return __set_last_synchronized(table_name, datetime.datetime.utcnow())
     return locals()
 
+
 """
-This function takes in a table_name (logs, outputs, etc) and returns
-the latest timestamp the data was synchronized
+This function takes in a table_name (logs, outputs, etc) and returns the latest timestamp the data was synchronized
+
+   :param p1: table_name
+   :type p1: str
+   :return: Timestamp of latest entry in a database table
+   :rtype: datetime
 """
+
 def __get_last_synchronized(table_name):
     timestamp =  db(db.synchronization_events.table_name == table_name).select(db.synchronization_events.time_stamp, orderby="time_stamp DESC", limitby=(0, 1))
     if (not timestamp):
@@ -66,3 +72,4 @@ event are not lost
 """
 def __set_last_synchronized(table_name, timestamp):
     db.synchronization_events.insert(table_name=table_name,time_stamp=timestamp)
+
