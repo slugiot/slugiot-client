@@ -1,9 +1,15 @@
 import datetime
 import json_plus
-import unittest
 from gluon import current
 
 class ProcedureApi():
+
+    class LogLevel:
+        """The log levels used for logging into the logs table"""
+        ERROR = 0
+        WARNING = 1
+        INFO = 2
+        DEBUG = 3
 
     def __init__(self, procedure_name):
         self.procedure_name = procedure_name
@@ -20,20 +26,47 @@ class ProcedureApi():
                                               modulename=self.procedure_name,
                                               name=key,
                                               module_value=json_plus.Serializable.dumps(val))
+        db.commit()
 
 
-    def write_output(self, name, data, tag):
-        """ This write the values and the tag to the outputs table.
-        param name : This is the name of the output
-         param data : The value of the output : This is a dictionary of key value pairs
-         Param tag: This is the ID of the sensor (or additional data to differentiate the outputs)"""
+    def read_value(self, key):
+        """ Returns the value from the module_values table for a given key
+        The lookup is done using the key and the procedure name
+        param key : The key whose value needs to be returned"""
         db = current.db
-        data = json_plus.Serializable.dumps(data)
+        row = db((db.module_values.name == key) & (db.module_values.modulename == self.procedure_name)).select()
+        if len(row) > 0:
+            return json_plus.Serializable.loads(row[0].module_value)
+
+
+
+    def write_output(self, name, data, tag=None):
+        """ This write the value and the tag to the outputs table.
+        param name : Name of the output
+        param data : The value of the output
+        Param tag: This is the ID of the sensor (or additional data to differentiate the outputs)"""
+        db = current.db
         db.outputs.insert(modulename=self.procedure_name,
                           name=name,
-                          output_value=data,
+                          output_value=json_plus.Serializable.dumps(data),
                           time_stamp=datetime.datetime.utcnow(),
                           tag=tag)
+        db.commit()
+
+    def write_outputs(self, data, tag=None):
+        """ This write the values and the tag to the outputs table.
+        param data : dict of key/value pairs to be written to the table. All pairs will have the same timestamp
+        Param tag: This is the ID of the sensor (or additional data to differentiate the outputs)"""
+        db = current.db
+        time_now = datetime.datetime.utcnow()
+        for key, val in data.iteritems():
+            db.outputs.insert(modulename=self.procedure_name,
+                              name=key,
+                              output_value=json_plus.Serializable.dumps(val),
+                              time_stamp=time_now,
+                              tag=tag)
+        db.commit()
+
 
     def write_log(self, log_text, log_level=0):
         """Writes a log message to the logs table
@@ -44,37 +77,63 @@ class ProcedureApi():
                        modulename=self.procedure_name,
                        log_level=log_level,
                        log_message=log_text)
+        db.commit()
 
 
-    # todo : schedule tasks for procedure
     def add_schedule(self,
-                     method,
-                     start_time=datetime.datetime.utcnow(),
+                     function,
+                     function_args=[],
+                     start_time=datetime.datetime.now(),
                      stop_time=None,
                      timeout=60,
-                     prevent_drift=False,
-                     period=60,
-                     immediate=False,
+                     period_between_runs=60,
                      repeats = 1,
-                     retry_failed=5):
+                     num_retries=5):
 
+        """Add a schedule to the Web2py scheduler.
+        param function : The function in the procedure to be called when the schedule is triggered
+        param function_args : list of arguments to be passed to the function
+        param start_time : The time for the schedule to be assigned. datetime object. Passed to Web2py's queue_task
+        param stop_time : datetime object, defaults to none.
+        param timeout : The maximum time the function runs, defaults to 60 seconds
+        param period_between_runs : The number of seconds between runs. Use this to setup a recurring schedule.
+                             Defaults to 60 seconds
+        param repeats : The number of times the task should run. Use this to setup a recurring schedule.
+                            Defaults to 1, which means the function is run once
+        param num_retries : The number of times a task is retried if it fails
+        """
         from gluon import current
         current.slugiot_scheduler.queue_task(
+            task_name=self.procedure_name + "_" + function,
             function='rerun_procedure',
-            pargs=[self.procedure_name, method],
+            pvars = {'procedure':self.procedure_name, 'function':function, 'function_args':function_args},
             repeats = repeats,
-            period = period,
-            immediate=immediate,
-            retry_failed=retry_failed)
+            period = period_between_runs,
+            start_time=start_time,
+            stop_time=stop_time,
+            timeout=timeout,
+            retry_failed=num_retries)
+        current.db.commit();
 
 
-#class TestProcedureAPI(unittest.TestCase):
+    def remove_all_schedules(self):
+        """ Remove all schedules for the current procedure.
+        """
+        # TODO : Should we remove completed tasks ?
+        self.write_log("Removing all scheduled tasks for the current procedure",
+                       self.LogLevel.INFO)
+        db = current.db
+        db(db.scheduler_task.task_name.like(self.procedure_name + '_%')).delete()
+        db.commit()
 
-#    def test_output(self):
-#       dict = {"temperature": 31, "humidity": 45}
-#        api = ProcedureApi("TestModule23")
-#        api.write_output("Thermostat Readings", dict, "None")
-#        db = current.db
-#        row = db(db.outputs.modulename == "TestModule23").select()
-#       output_val = row[0].output_value
-#        self.assertEqual(dict, json_plus.Serializable().loads(output_val))
+    def remove_schedule(self, function):
+        """Deletes the existing schedule for this procedure and function
+        param function: The function of this procedure whose schedule should be deleted"""
+
+        # TODO : Should we remove completed tasks ?
+        self.write_log("Removing scheduled task for the current function " + function,
+                       self.LogLevel.INFO)
+        db = current.db
+        task_name = self.procedure_name + "_" + function
+        db((db.scheduler_task.task_name == task_name) & (db.scheduler_task.status != 'COMPLETED')).delete()
+        db.commit()

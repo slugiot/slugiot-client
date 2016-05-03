@@ -56,11 +56,3 @@ def call():
     supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv
     """
     return service()
-
-
-def test_log_message():
-    import procedureapi
-    import test_procedure
-    api = procedureapi.ProcedureApi("TestModule23")
-    test_procedure.run()
-    return response.json({"result" : "done"})
