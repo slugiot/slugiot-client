@@ -20,7 +20,7 @@
 
 ## These tables are synched "up" from the clients to the server.
 
-from datetime import datetime
+import datetime
 
 ############### Procedure Harness Table ###############
 
