@@ -12,7 +12,7 @@ import requests
 from json_plus import Serializable
 db = current.db
 proc_table = db.procedures
-settings_table = db.client_setting
+#settings_table = db.client_setting
 
 def do_procedure_sync():
     """
@@ -24,7 +24,7 @@ def do_procedure_sync():
     """
 
     # Get device id from settings table - fix this based on Synch group code
-    device_id = db().select(settings_table.device_id).first().device_id
+    device_id = "1" #db().select(settings_table.device_id).first().device_id
 
     # Get authorization from server for request???
     #   Waiting for other team to implement this method
@@ -33,7 +33,12 @@ def do_procedure_sync():
     # Request dictionary {procedure_id: last_updated_date} from server
     server_url = myconf.get('server.host')
     call_url = server_url + '/proc_harness/get_procedure_status/' + str(device_id) + '.json'
-    server_status = Serializable.loads(requests.get(call_url))
+    r = requests.get(call_url)
+    print "status code", r.status_code
+    print "json", r.json()
+    server_status = Serializable.loads(r.json())
+
+    print "server_status", server_status
 
     # Get corresponding dictionary from client procedure table
     client_status = get_procedure_status()
@@ -42,8 +47,8 @@ def do_procedure_sync():
     synch_ids = compare_dates(server_status, client_status)
 
     # Request full procedure data for new and updated procedures from server
-    call_url_data = server_url + '/proc_harness/get_procedure_data(' + Serializable.dump(synch_ids) + ').json'
-    call_url_names = server_url + '/proc_harness/get_procedure_names(' + Serializable.dump(synch_ids) + ').json'
+    call_url_data = server_url + '/proc_harness/get_procedure_data/' + Serializable.dump(synch_ids) + '.json'
+    call_url_names = server_url + '/proc_harness/get_procedure_names/' + Serializable.dump(synch_ids) + '.json'
 
     synch_data = Serializable.loads(json.load(requests.get(call_url_data)))
     synch_names = Serializable.loads(json.load(requests.get(call_url_names)))
