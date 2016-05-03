@@ -11,7 +11,7 @@ from gluon import current
 import requests
 from json_plus import Serializable
 db = current.db
-proc_table = db.procedure
+proc_table = db.procedures
 settings_table = db.client_setting
 
 def do_procedure_sync():
