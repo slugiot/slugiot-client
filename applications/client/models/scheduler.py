@@ -9,5 +9,14 @@ def run_procedure(procedure, function, function_args):
     logger.info("Returned from function call")
     logger.info(result)
 
+
+def synchronize(function):
+    import json_plus
+    result = function()
+    logger.info("Returned from synchronization function call")
+    logger.info(result)
+
+
 from gluon.scheduler import Scheduler
-current.slugiot_scheduler = Scheduler(db, dict(rerun_procedure=run_procedure))
+current.slugiot_scheduler = Scheduler(db, dict(rerun_procedure=run_procedure, do_synchronization=synchronize))
+
