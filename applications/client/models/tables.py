@@ -26,9 +26,8 @@ from datetime import datetime
 
 db.define_table('procedures',
                 Field('procedure_id', 'bigint', required=True),  # key
-                Field('last_update', 'datetime', required=True),
-                Field('procedure_data', 'text', required=True),  # Actual code for procedure - is check IS_LENGTH(65536) ok?
-                # Otherwise use string and specifiy larger length
+                Field('last_update', 'datetime', default=datetime.utcnow(), required=True),
+                Field('name', 'string') # Name of procedure
                 )
 
 ############### Procedure API Tables #################
