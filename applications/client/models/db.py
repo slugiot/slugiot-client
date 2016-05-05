@@ -100,3 +100,7 @@ server_url = myconf.get('server.host')
 import slugiot_settings
 settings = slugiot_settings.SlugIOTSettings()
 
+# Initialize the synchroniztion interface
+import slugiot_synchronization
+synchronization = slugiot_synchronization.SlugIOTSynchronization()
+
