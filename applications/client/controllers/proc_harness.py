@@ -28,6 +28,8 @@ def new_proc_test():
 
     view_table()
 
+    return "New Procedure Test Complete"
+
 def update_proc_test():
     call_url = server_url + '/proc_harness_test/update_proc_for_synch'
     r = requests.get(call_url)
@@ -36,6 +38,8 @@ def update_proc_test():
 
     view_table()
 
+    return "Update Procedure Test Complete"
+
 def not_update_proc_test():
     call_url = server_url + '/proc_harness_test/update_proc_not_for_synch'
     r = requests.get(call_url)
@@ -43,6 +47,8 @@ def not_update_proc_test():
     do_procedure_sync()
 
     view_table()
+
+    return "No Update Procedure Test Complete"
 
 def do_procedure_sync():
     """
@@ -149,7 +155,7 @@ def insert_new_procedure(procedure_data, procedure_names, server_status):
         #api_obj.remove_all_schedules()
         #api_obj.add_schedule("run", repeats=1)
 
-        proc_table.update_or_insert(procedure_id = proc,
+        proc_table.update_or_insert(proc_table.procedure_id == proc,
                                     last_update = server_status[proc],
                                     name = name)
 
