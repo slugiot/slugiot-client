@@ -14,6 +14,36 @@ db = current.db
 proc_table = db.procedures
 #settings_table = db.client_setting
 
+server_url = myconf.get('server.host')
+
+def view_table():
+    for row in db(proc_table).select():
+        print row
+
+def new_proc_test():
+    call_url = server_url + '/proc_harness_test/create_new_proc_for_synch'
+    r = requests.get(call_url)
+
+    do_procedure_sync()
+
+    view_table()
+
+def update_proc_test():
+    call_url = server_url + '/proc_harness_test/update_proc_for_synch'
+    r = requests.get(call_url)
+
+    do_procedure_sync()
+
+    view_table()
+
+def not_update_proc_test():
+    call_url = server_url + '/proc_harness_test/update_proc_not_for_synch'
+    r = requests.get(call_url)
+
+    do_procedure_sync()
+
+    view_table()
+
 def do_procedure_sync():
     """
     Perform sync of procedures according to the following protocol:
@@ -24,14 +54,13 @@ def do_procedure_sync():
     """
 
     # Get device id from settings table - fix this based on Synch group code
-    device_id = "1" #db().select(settings_table.device_id).first().device_id
+    device_id = "test" #db().select(settings_table.device_id).first().device_id
 
     # Get authorization from server for request???
     #   Waiting for other team to implement this method
     #   Not sure what to do here if anything
 
     # Request dictionary {procedure_id: last_updated_date} from server
-    server_url = myconf.get('server.host')
     call_url = server_url + '/proc_harness/get_procedure_status/' + str(device_id)
     r = requests.get(call_url)
     server_status = r.json()
