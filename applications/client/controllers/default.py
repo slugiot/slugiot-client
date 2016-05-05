@@ -9,6 +9,7 @@
 #########################################################################
 import slugiot_settings
 
+
 def index():
     """
     example action using the internationalization operator T and flash
@@ -17,9 +18,41 @@ def index():
     if you need a simple wiki simply replace the two lines below with:
     return auth.wiki()
     """
-    response.flash = T("Hello World")
-    return dict(message=T('Welcome to web2py!'))
+    response.flash = T("Hello")
 
+    # Check if settings exist already
+    if not slugiot_settings.check_device_id():
+        message = T('Welcome to SlugIOT Client. Please register device')
+        settings = A("Click here to initialize your device", _href=URL('default','settings',vars={'new':True}), _class = 'btn btn-primary')
+    else:
+        message = T('This device is registered')
+        settings = A("Click here to see/edit device settings", _href=URL('default','settings'), _class = 'btn btn-success')
+    return dict(message=message, settings =settings)
+
+
+def settings():
+    """
+    Settings page for the device to set device ID.
+    """
+    # Get device ID
+    device_id = slugiot_settings.check_device_id() if slugiot_settings.check_device_id() is not None else ""
+    settings_dict = dict(device_id=device_id)
+
+    # For edit option
+    if request.vars.new or request.vars.edit:
+        form = SQLFORM.dictform(settings_dict)
+        edit_button = T("")
+        if form.process().accepted:
+            settings_dict.update(form.vars)
+            slugiot_settings.set_device_id("device_id=%r"%(settings_dict['device_id']))
+            redirect(URL('default','index'))
+
+    # For view option
+    else:
+        form = H2("Device ID: ",str(device_id))
+        edit_button = A("Edit", _href=URL('default', 'settings',vars={'edit':True}), _class = 'btn btn-primary')
+
+    return dict(form=form, edit_button=edit_button)
 
 @request.restful()
 def initialization():
