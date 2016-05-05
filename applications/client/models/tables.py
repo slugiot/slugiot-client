@@ -26,7 +26,7 @@ import datetime
 
 db.define_table('procedures',
                 Field('procedure_id', 'bigint', required=True),  # key
-                Field('last_update', 'datetime', required=True),
+                Field('last_update', 'datetime', default=datetime.utcnow(), required=True),
                 Field('name', 'string') # Name of procedure
                 )
 
