@@ -63,8 +63,10 @@ def do_procedure_sync():
     # Request dictionary {procedure_id: last_updated_date} from server
     call_url = server_url + '/proc_harness/get_procedure_status/' + str(device_id)
     r = requests.get(call_url)
-    server_status = r.json()
-
+    try:
+        server_status = r.json()
+    except:
+        server_status = {}
     print "server_status", server_status
 
     # Get corresponding dictionary from client procedure table
