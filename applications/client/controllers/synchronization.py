@@ -7,6 +7,9 @@
 ## - user is required for authentication and authorization
 ## - download is for downloading files uploaded in the db (does streaming)
 #########################################################################
+import requests
+from gluon import serializers
+
 
 def index():
     """
@@ -19,50 +22,125 @@ def index():
     response.flash = T("Hello World Sync")
     return dict(message=T('Welcome to web2py!'))
 
+"""
+This function syncs the information to the server. The data from  __get_log_data is serialized into JSON and posted on the server url = server_url + "/synchronization/receive_logs"
+and a 200 status code indicates successful posting of information and the synchronization_events time_stamps are updated or an error is sent in the response along with the time_stamp
 
-def test_log_message():
-    log_message = request.vars.log_message
-    log_level = request.vars.log_level
-    import procedureapi
-    api = procedureapi.ProcedureApi("Test")
-    api.write_log(log_message, log_level)
-    return response.json({"result" : "done"})
-
-def writing_to_db():
-    current.db.logs.insert(time_stamp=datetime.datetime.utcnow(),modulename="Test",log_level=0,log_message="Writing to database0")
-    current.db.logs.insert(time_stamp=datetime.datetime.utcnow(), modulename="Test", log_level=0,log_message="Writing to database1")
-    current.db.logs.insert(time_stamp=datetime.datetime.utcnow(), modulename="Test", log_level=0,log_message="Writing to database2")
-    return response.json({"result": "done"})
-
-def reading_from_db():
-    for row in db(db.logs.time_stamp > 0).iterselect():
-        print row.log_message,row.time_stamp
-
+   :return: Dictionary containing whether the request posted is a success or not and the latest synchronization time_stamp
+   :rtype: Dictionary
+"""
 @request.restful()
-def test_last_synchronized():
-    table_name = "example"
+def synchronize_logs():
+    synchronized_timestamp = datetime.utcnow()
+    data = __get_log_data(synchronized_timestamp)
     def GET(*args, **vars):
-        return __get_last_synchronized(table_name)
+        return response.json(data)
     def POST(*args, **vars):
-        return __set_last_synchronized(table_name, datetime.datetime.utcnow())
+        url = server_url + "/synchronization/receive_logs"
+        json_data = serializers.json(data)
+        sync_response = requests.post(url=url, data=json_data)
+        if (sync_response.status_code == 200):
+            #success
+            __set_last_synchronized("logs", synchronized_timestamp)
+            return response.json(
+                dict(success=True,timestamp=synchronized_timestamp))
+        else:
+            #failure
+            error = sync_response.content
+            return response.json(
+                dict(
+                    success=False,
+                    timestamp=synchronized_timestamp,
+                    error=error,
+                    server_url=url,
+                )
+            )
+
     return locals()
 
+
 """
-This function takes in a table_name (logs, outputs, etc) and returns
-the latest timestamp the data was synchronized
+This function gets the values from the "logs" table. It returns as a dictionary all values greater than the latest timestamp in the synchronization_events
+table and all values lesser than the paramter current_timestamp. This allows for all the values on client but not on server to be stored in a dictionary
+ready to be sycnhed.
+
+   :param p1: current_timestamp
+   :type p1: str
+   :return: dictionary of all values in the logs table > synchronization_events.time_stamp and < current_timestamp
+   :rtype: dictionary
 """
+
+def __get_log_data(current_timestamp):
+    log_db_data = db(db.logs.time_stamp >= __get_last_synchronized("logs")
+                     and db.logs.time_stamp < current_timestamp
+                     ).select()
+    return dict(
+        device_id=settings.get_device_id(),
+        logs=log_db_data
+    )
+
+"""
+This function takes in a table_name (logs, outputs, etc) and returns the latest timestamp the data was synchronized
+
+   :param p1: table_name
+   :type p1: str
+   :return: Timestamp of latest entry in a database table
+   :rtype: datetime
+"""
+
 def __get_last_synchronized(table_name):
     timestamp =  db(db.synchronization_events.table_name == table_name).select(db.synchronization_events.time_stamp, orderby="time_stamp DESC", limitby=(0, 1))
     if (not timestamp):
-        return datetime.datetime.fromtimestamp(0)
+        return datetime.fromtimestamp(0)
     return timestamp[0].time_stamp
 
 """
-This function takes in a table_name (logs, outputs, etc) and a timestamp
-and inserts a record to store that it was updated.  The timestamp is NOT
-defaulted to datetime.utcnow() because you need to store the timestamp
-from when you retrieved the updates, so updates that occur during a sync
-event are not lost
+This function takes in a table_name and timestamp and inserts in into the synchronization_events table
+
+   :param p1: table_name
+   :type p1: str
+   :param p1: timestamp
+   :type p1: str
 """
+
 def __set_last_synchronized(table_name, timestamp):
     db.synchronization_events.insert(table_name=table_name,time_stamp=timestamp)
+
+
+# Adopted from procedureapi.py
+def add_sync_schedule(self,
+                      function,
+                      start_time=datetime.datetime.now(),
+                      stop_time=None,
+                      timeout=600,
+                      period_between_runs=720,
+                      repeats=1,
+                      num_retries=5):
+
+    """Add a schedule to the Web2py scheduler.
+    param function : The function in the procedure to be called when the schedule is triggered.
+    param function_args : list of arguments to be passed to the function.
+    param start_time : The time for the schedule to be assigned. datetime object. Passed to Web2py's queue_task.
+    param stop_time : datetime object, defaults to none.
+    param timeout : The maximum time the function runs, defaults to 600 seconds.
+    param period_between_runs : The number of seconds between runs. Use this to setup a recurring schedule.
+                         Defaults to 720 seconds.
+    param repeats : The number of times the task should run. Use this to setup a recurring schedule.
+                        Defaults to 1, which means the function is run once.
+    param num_retries : The number of times a task is retried if it fails. Defaults to 5 times.
+    """
+    from gluon import current
+
+    current.slugiot_scheduler.queue_task(
+        task_name=function,
+        function='do_synchronization',
+        pvars={'function': function},
+        repeats=repeats,
+        period=period_between_runs,
+        start_time=start_time,
+        stop_time=stop_time,
+        timeout=timeout,
+        retry_failed=num_retries)
+    current.db.commit()
+
+
