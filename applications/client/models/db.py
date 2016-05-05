@@ -33,6 +33,15 @@ else:
     ## from google.appengine.api.memcache import Client
     ## session.connect(request, response, db = MEMDB(Client()))
 
+# Test Database configuration.
+# Set the testdb.active value in appconfig.ini to True in order to use test database
+TEST_MODE = myconf.get('testdb.active')
+if TEST_MODE:
+    db = DAL(myconf.get('testdb.uri'),
+             pool_size=myconf.get('testdb.pool_size'),
+             migrate_enabled=myconf.get('testdb.migrate'),
+             check_reserved=['all'])
+
 ## by default give a view/generic.extension to all actions from localhost
 ## none otherwise. a pattern can be 'controller/function.extension'
 response.generic_patterns = ['*'] if request.is_local else []

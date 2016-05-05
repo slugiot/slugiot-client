@@ -20,11 +20,11 @@
 
 ## These tables are synched "up" from the clients to the server.
 
-from datetime import datetime
+import datetime
 
 ############### Procedure Harness Table ###############
 
-db.define_table('procedure',
+db.define_table('procs',
                 Field('procedure_id', 'bigint', required=True),  # key
                 Field('last_update', 'datetime', required=True),
                 Field('procedure_data', 'text', required=True),  # Actual code for procedure - is check IS_LENGTH(65536) ok?
