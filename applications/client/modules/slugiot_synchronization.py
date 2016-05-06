@@ -1,4 +1,4 @@
-import json_plus
+# import json_plus
 import urllib
 from slugiot_setup import  LogLevel
 import traceback
@@ -18,15 +18,14 @@ def synchronize(setup_info, table_name):
     """
     with sync_lock:
         db = setup_info.db
-        rows = db(db[table_name].time_stamp > get_last_synchronized(db, table_name)).select(
-            orderby=~db[table_name].time_stamp).as_dict()
+        rows = get_data_for_synchronization(setup_info, table_name)
         if len(rows) > 0:
             try:
                 # Let's get the device id.
                 # There is something to synch
-                body = json_plus.Serializable.dumps(rows)
-                url = (setup_info.server_url + "/synchronization/" +
-                        urllib.quote(setup_info.device_id) + '/' +
+                # body = json_plus.Serializable.dumps(dict(device_id=setup_info.device_id,logs=rows))
+                body = serializers.custom_json(dict(device_id=setup_info.device_id,logs=rows))
+                url = (setup_info.server_url + "/synchronization/receive_" +
                         urllib.quote(table_name)
                        )
                 result = requests.post(url=url, data=body)
@@ -39,6 +38,11 @@ def synchronize(setup_info, table_name):
                                log_message="Synch failed for logs: %s" % traceback.format_exc())
                 return False
         return True
+
+def get_data_for_synchronization(setup_info, table_name):
+    db = setup_info.db
+    return db(db[table_name].time_stamp > get_last_synchronized(db, table_name)).select(
+        orderby=~db[table_name].time_stamp).as_dict()
 
 
 def synch_all(setup_info, tables=["logs", "outputs"]):

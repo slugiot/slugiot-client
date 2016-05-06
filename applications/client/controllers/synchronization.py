@@ -9,6 +9,7 @@
 #########################################################################
 import requests
 from gluon import serializers
+import slugiot_synchronization
 
 
 def index():
@@ -31,30 +32,13 @@ and a 200 status code indicates successful posting of information and the synchr
 """
 @request.restful()
 def synchronize_logs():
-    synchronized_timestamp = datetime.utcnow()
-    data = __get_log_data(synchronized_timestamp)
     def GET(*args, **vars):
-        return response.json(data)
+        return response.json(slugiot_synchronization.get_data_for_synchronization(slugiot_synchronization, "logs"))
     def POST(*args, **vars):
-        url = server_url + "/synchronization/receive_logs"
-        json_data = serializers.json(data)
-        sync_response = requests.post(url=url, data=json_data)
-        if (sync_response.status_code == 200):
-            #success
-            __set_last_synchronized("logs", synchronized_timestamp)
-            return response.json(
-                dict(success=True,timestamp=synchronized_timestamp))
+        if (slugiot_synchronization.synchronize(slugiot_setup, "logs")):
+            return "ok"
         else:
-            #failure
-            error = sync_response.content
-            return response.json(
-                dict(
-                    success=False,
-                    timestamp=synchronized_timestamp,
-                    error=error,
-                    server_url=url,
-                )
-            )
+            return "failure"
 
     return locals()
 

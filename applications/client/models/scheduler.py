@@ -11,7 +11,7 @@ def run_procedure(procedure, function, function_args):
     logger.info("%r" % result)
 
 
-def synchronize():
+def scheduled_synchronize():
     import slugiot_synchronization
     logger.info("Start synch")
     slugiot_synchronization.synch_all(slugiot_setup, ['logs', 'outputs', 'values'])
@@ -20,7 +20,7 @@ def synchronize():
 
 from gluon.scheduler import Scheduler
 current.slugiot_scheduler = Scheduler(db, dict(rerun_procedure=run_procedure,
-                                               do_synchronization=synchronize))
+                                               do_synchronization=scheduled_synchronize))
 
 
 
