@@ -1,6 +1,7 @@
 import datetime
 import json_plus
 from gluon import current
+import slugiot_setup
 
 class ProcedureApi():
 
@@ -12,6 +13,9 @@ class ProcedureApi():
         DEBUG = 3
 
     def __init__(self, procedure_name):
+        # Luca says: this needs to work by procedure_id to make things easy.
+        # Let us know if this creates too much trouble.  We cannot refer
+        # to procedures sometimes by id and sometimes by name.
         self.procedure_name = procedure_name
 
     def write_value(self, dictionary):
@@ -22,7 +26,7 @@ class ProcedureApi():
         for key,val in dictionary.iteritems():
             # Update the key value for this module if it already exists
             db.module_values.update_or_insert((db.module_values.name == key) & (db.module_values.modulename == self.procedure_name),
-                                              time_stamp=datetime.datetime.utcnow(),
+                                              time_stamp=datetime.datetime.utcnow(), # Luca: might not be necessary.
                                               modulename=self.procedure_name,
                                               name=key,
                                               module_value=json_plus.Serializable.dumps(val))
@@ -34,22 +38,21 @@ class ProcedureApi():
         The lookup is done using the key and the procedure name
         param key : The key whose value needs to be returned"""
         db = current.db
-        row = db((db.module_values.name == key) & (db.module_values.modulename == self.procedure_name)).select()
-        if len(row) > 0:
-            return json_plus.Serializable.loads(row[0].module_value)
+        row = db((db.module_values.name == key) & (db.module_values.modulename == self.procedure_name)).select().first()
+        return None if row is None else json_plus.Serializable.loads(row.module_value)
 
 
-
-    def write_output(self, name, data, tag=None):
+    def write_output(self, name, data, tag=None, timestamp=None):
         """ This write the value and the tag to the outputs table.
         param name : Name of the output
         param data : The value of the output
         Param tag: This is the ID of the sensor (or additional data to differentiate the outputs)"""
         db = current.db
+        timestamp = timestamp or datetime.datetime.utcnow()
         db.outputs.insert(modulename=self.procedure_name,
                           name=name,
                           output_value=json_plus.Serializable.dumps(data),
-                          time_stamp=datetime.datetime.utcnow(),
+                          time_stamp=datetime.datetime.utcnow(), # Luca: this might not be necessary. Same in the following.
                           tag=tag)
         db.commit()
 
@@ -57,22 +60,22 @@ class ProcedureApi():
         """ This write the values and the tag to the outputs table.
         param data : dict of key/value pairs to be written to the table. All pairs will have the same timestamp
         Param tag: This is the ID of the sensor (or additional data to differentiate the outputs)"""
+
         db = current.db
         time_now = datetime.datetime.utcnow()
-        for key, val in data.iteritems():
-            db.outputs.insert(modulename=self.procedure_name,
-                              name=key,
-                              output_value=json_plus.Serializable.dumps(val),
-                              time_stamp=time_now,
-                              tag=tag)
+        # Luca: check, rewritten to use previous method.
+        for name, data in data.iteritems():
+            self.write_output(name, data, tag=tag, timestamp=time_now)
         db.commit()
 
 
-    def write_log(self, log_text, log_level=0):
+    def write_log(self, log_text, log_level=None):
+        # Luca: Can you use the LogLevel.INFO defined
         """Writes a log message to the logs table
         param log_text : message to be logged
         param log_level : 0 for error, 1 for warning, 2 for info, 3 for debug """
         db = current.db
+        log_level = slugiot_setup.LogLevel.INFO if log_level is None else log_level
         db.logs.insert(time_stamp=datetime.datetime.utcnow(),
                        modulename=self.procedure_name,
                        log_level=log_level,
@@ -120,6 +123,7 @@ class ProcedureApi():
         """ Remove all schedules for the current procedure.
         """
         # TODO : Should we remove completed tasks ?
+        # Luca: yes, you need some way to do cleanup of the table.
         self.write_log("Removing all scheduled tasks for the current procedure",
                        self.LogLevel.INFO)
         db = current.db

@@ -11,6 +11,9 @@ import requests
 from gluon import serializers
 
 
+# Luca: a lot of this went into modules/slugiot_synchronization.py
+# Can you see what's there and ... factor the code somehow?
+
 def index():
     """
     example action using the internationalization operator T and flash

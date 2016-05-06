@@ -44,7 +44,7 @@ db.define_table('settings',
 # Synched client -> server
 db.define_table('logs',
                 Field('time_stamp', 'datetime', default=datetime.utcnow()),
-                Field('procedure_id'),
+                Field('procedure_id'), # Luca: note: procedure_id throughout.
                 Field('log_level', 'integer'),  # int, 0 = most important.
                 Field('log_message', 'text')
                 )
