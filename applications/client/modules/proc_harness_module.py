@@ -5,6 +5,8 @@ import sys
 import requests
 import logging
 import slugiot_settings as ss
+from gluon.contrib.appconfig import AppConfig
+
 
 def do_procedure_sync():
     """
@@ -17,6 +19,7 @@ def do_procedure_sync():
     logger = logging.getLogger("web2py.app.client")
     logger.setLevel(logging.INFO)
 
+    myconf = AppConfig(reload=True)
     server_url = myconf.get('server.host')
 
     # Get device id from settings
@@ -132,6 +135,7 @@ def insert_new_procedure(procedure_data, procedure_names, server_status):
         #api_obj.add_schedule("run", repeats=1)
 
         proc_table.update_or_insert(proc_table.procedure_id == proc,
+                                    procedure_id = proc,
                                     last_update = server_status[proc],
                                     name = name)
 

@@ -8,6 +8,7 @@ import proc_harness_module as phm
 from gluon import current
 import logging
 import requests
+import sys
 
 test_device_id = "test"
 logger = logging.getLogger("web2py.app.client")
@@ -21,7 +22,20 @@ server_url = myconf.get('server.host')
 
 def view_table():
     for row in db(proc_table).select():
-        print row
+        logger.debug(row)
+
+def clear_tables():
+    call_url = server_url + '/proc_harness_test/clear_tables'
+
+    try:
+        r = requests.get(call_url)
+    except requests.exceptions.RequestException as e:
+        logger.ERROR(e)
+        sys.exit(1)
+
+    proc_table.truncate()
+
+    return "Tables Cleared on Server and Client"
 
 def new_proc_test():
     call_url = server_url + '/proc_harness_test/create_new_proc_for_synch'
