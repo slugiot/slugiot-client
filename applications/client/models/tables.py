@@ -81,3 +81,4 @@ device_id_row = db(db.settings.setting_name == 'device_id').select().first()
 slugiot_setup.device_id = None if device_id_row is None else device_id_row.setting_value
 
 
+

@@ -74,7 +74,7 @@ class ProcedureApi():
         param log_level : 0 for error, 1 for warning, 2 for info, 3 for debug """
         db = current.db
         db.logs.insert(time_stamp=datetime.datetime.utcnow(),
-                       modulename=self.procedure_name,
+                       procedure_id=self.procedure_name,
                        log_level=log_level,
                        log_message=log_text)
         db.commit()

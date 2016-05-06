@@ -23,6 +23,22 @@ def index():
     response.flash = T("Hello World Sync")
     return dict(message=T('Welcome to web2py!'))
 
+def test_log_message():
+    log_message = request.vars.log_message
+    log_level = request.vars.log_level
+    import procedureapi
+    api = procedureapi.ProcedureApi("Test")
+    api.write_log(log_message, log_level)
+    return response.json({"result" : "done"})
+
+def writing_to_db():
+    current.db.logs.insert(time_stamp=datetime.utcnow(),modulename="Test",log_level=0,log_message="Writing to database0")
+    current.db.logs.insert(time_stamp=datetime.utcnow(), modulename="Test", log_level=0,log_message="Writing to database1")
+    current.db.logs.insert(time_stamp=datetime.utcnow(), modulename="Test", log_level=0,log_message="Writing to database2")
+    return response.json({"result": "done"})
+
+
+
 """
 This function syncs the information to the server. The data from  __get_log_data is serialized into JSON and posted on the server url = server_url + "/synchronization/receive_logs"
 and a 200 status code indicates successful posting of information and the synchronization_events time_stamps are updated or an error is sent in the response along with the time_stamp
@@ -94,7 +110,7 @@ def __set_last_synchronized(table_name, timestamp):
 # Adopted from procedureapi.py
 def add_sync_schedule(self,
                       function,
-                      start_time=datetime.datetime.now(),
+                      start_time=datetime.utcnow(),
                       stop_time=None,
                       timeout=600,
                       period_between_runs=720,

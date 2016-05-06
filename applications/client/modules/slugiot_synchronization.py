@@ -1,12 +1,10 @@
-# import json_plus
+import json_plus
 import urllib
 from slugiot_setup import  LogLevel
 import traceback
 import threading
-from gluon import current;
 from datetime import datetime;
 import requests
-from gluon import serializers;
 
 sync_lock = threading.Lock()
 
@@ -23,26 +21,30 @@ def synchronize(setup_info, table_name):
             try:
                 # Let's get the device id.
                 # There is something to synch
-                # body = json_plus.Serializable.dumps(dict(device_id=setup_info.device_id,logs=rows))
-                body = serializers.custom_json(dict(device_id=setup_info.device_id,logs=rows))
+                body = json_plus.Serializable.dumps(dict(device_id=setup_info.device_id,logs=rows))
                 url = (setup_info.server_url + "/synchronization/receive_" +
-                        urllib.quote(table_name)
+                       urllib.quote(table_name)
                        )
                 result = requests.post(url=url, data=body)
                 if result.status_code == 200:
                     # Updates synch time.
-                    set_last_synchronized(db, table_name, rows[0]['timestamp'])
+                    set_last_synchronized(db, table_name, rows[0]['time_stamp'])
+                    return True
+                db.logs.insert(procedure_id=None, log_level=LogLevel.WARN,
+                               log_message="Synch failed for logs: %s" % result.content)
+
             except Exception, _:
                 # We failed synch.  We write this to the logs.
-                db.logs.insert(modulename=None, log_level = LogLevel.WARN,
+                db.logs.insert(procedure_id=None, log_level = LogLevel.WARN,
                                log_message="Synch failed for logs: %s" % traceback.format_exc())
-                return False
+
+            return False
         return True
 
 def get_data_for_synchronization(setup_info, table_name):
     db = setup_info.db
     return db(db[table_name].time_stamp > get_last_synchronized(db, table_name)).select(
-        orderby=~db[table_name].time_stamp).as_dict()
+        orderby=~db[table_name].time_stamp).as_list()
 
 
 def synch_all(setup_info, tables=["logs", "outputs"]):
@@ -67,7 +69,7 @@ def set_last_synchronized(db, table_name, timestamp):
 # Adopted from procedureapi.py
 def add_sync_schedule(self,
                       function,
-                      start_time=datetime.datetime.now(),
+                      start_time=datetime.utcnow(),
                       stop_time=None,
                       timeout=600,
                       period_between_runs=720,
