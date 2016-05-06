@@ -1,54 +1,10 @@
-#########################################################################
-## Define API for interacting with procedure table
-## These methods will be used in the controller, called by the code
-## that actually performs the sync to interact with the tables
-#########################################################################
-
 import procedureapi as api
 import json
 from gluon import current
-import os
-
+import sys
 import requests
-db = current.db
-proc_table = db.procedures
-#settings_table = db.client_setting
-
-server_url = myconf.get('server.host')
-
-def view_table():
-    for row in db(proc_table).select():
-        print row
-
-def new_proc_test():
-    call_url = server_url + '/proc_harness_test/create_new_proc_for_synch'
-    r = requests.get(call_url)
-
-    do_procedure_sync()
-
-    view_table()
-
-    return "New Procedure Test Complete"
-
-def update_proc_test():
-    call_url = server_url + '/proc_harness_test/update_proc_for_synch'
-    r = requests.get(call_url)
-
-    do_procedure_sync()
-
-    view_table()
-
-    return "Update Procedure Test Complete"
-
-def not_update_proc_test():
-    call_url = server_url + '/proc_harness_test/update_proc_not_for_synch'
-    r = requests.get(call_url)
-
-    do_procedure_sync()
-
-    view_table()
-
-    return "No Update Procedure Test Complete"
+import logging
+import slugiot_settings as ss
 
 def do_procedure_sync():
     """
@@ -58,51 +14,62 @@ def do_procedure_sync():
         Send list of procedure IDs that are needed from server
         Get updated data from server and save it to local database
     """
+    logger = logging.getLogger("web2py.app.client")
+    logger.setLevel(logging.INFO)
 
-    # Get device id from settings table - fix this based on Synch group code
-    device_id = "test" #db().select(settings_table.device_id).first().device_id
+    server_url = myconf.get('server.host')
 
-    # Get authorization from server for request???
-    #   Waiting for other team to implement this method
-    #   Not sure what to do here if anything
+    # Get device id from settings
+    device_id = "test" #ss.get_device_id()
 
     # Request dictionary {procedure_id: last_updated_date} from server
     call_url = server_url + '/proc_harness/get_procedure_status/' + str(device_id)
-    r = requests.get(call_url)
+    try:
+        r = requests.get(call_url)
+    except requests.exceptions.RequestException as e:
+        logger.ERROR(e)
+        sys.exit(1)
+
     try:
         server_status = r.json()
     except:
         server_status = {}
-    print "server_status", server_status
+    logger.debug("server_status: " + str(server_status))
 
     # Get corresponding dictionary from client procedure table
     client_status = get_procedure_status()
 
-    print "proc status", client_status
+    logger.debug("proc status: " + str(client_status))
 
     # Compare two dicts to get new procedures or procedures that have been updated
     synch_ids = compare_dates(server_status, client_status)
 
     if len(synch_ids) > 0:
-        print "synch ids", synch_ids
+        logger.debug("synch ids: " + str(synch_ids))
 
         # Request full procedure data for new and updated procedures from server
         call_url_data = server_url + '/proc_harness/get_procedure_data/'
         call_url_names = server_url + '/proc_harness/get_procedure_names/'
-        r = requests.get(call_url_data, params=json.dumps(synch_ids))
+        try:
+            r = requests.get(call_url_data, params=json.dumps(synch_ids))
+        except requests.exceptions.RequestException as e:
+            logger.ERROR(e)
+            sys.exit(1)
 
         synch_data = r.json()
-        print "synch data", synch_data
+        logger.debug("synch data: " + str(synch_data))
 
-        r = requests.get(call_url_names, params=json.dumps(synch_ids))
+        try:
+            r = requests.get(call_url_names, params=json.dumps(synch_ids))
+        except requests.exceptions.RequestException as e:
+            logger.ERROR(e)
+            sys.exit(1)
+
         synch_names = r.json()
-        print "synch names", synch_names
+        logger.debug("synch names: " + str(synch_names))
 
         # Update local data
         insert_new_procedure(synch_data, synch_names, server_status)
-        return "Status: Procedure Synch Complete"
-
-    return "Status: No Procedure Synch Needed"
 
 def get_procedure_status():
     """
@@ -112,6 +79,9 @@ def get_procedure_status():
     :return: Dict of the format {procedure_id: last_updated_date}
     :rtype:
     """
+
+    db = current.db
+    proc_table = db.procedures
 
     # Get all procedure_ids for the device_id
     procedure_ids = db().select(proc_table.procedure_id)
@@ -138,12 +108,18 @@ def insert_new_procedure(procedure_data, procedure_names, server_status):
     :type server_status:
     """
 
-    print "INSIDE INSERT FUNCTION: "
+    db = current.db
+    proc_table = db.procedures
+
+    logger = logging.getLogger("web2py.app.client")
+    logger.setLevel(logging.INFO)
+
+    logger.debug("INSIDE INSERT FUNCTION")
 
     for proc, name in procedure_names.iteritems():
         data = procedure_data[proc]
 
-        print proc, name, data, server_status[proc]
+        logger.debug(str(proc) + " " + str(name) + " " + str(data) + " " + str(server_status[proc]))
 
         # Storing procedure data as a file to avoid issues with exec
         file_name = "applications/client/modules/" + str(name) + ".py"
