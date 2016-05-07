@@ -17,9 +17,10 @@ def scheduled_synchronize():
 
 
 from gluon.scheduler import Scheduler
-current.slugiot_scheduler = Scheduler(db, dict(rerun_procedure=run_procedure(),
-                                               do_synchronization=scheduled_synchronize()))
+current.slugiot_scheduler = Scheduler(db, dict(rerun_procedure=run_procedure,
+                                               do_synchronization=scheduled_synchronize))
 # current.slugiot_scheduler.queue_task('do_synchronization', period=10, repeats=0)
+# --with-scheduler --scheduler=client
 
 
 

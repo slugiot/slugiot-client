@@ -21,9 +21,9 @@ class ProcedureApi():
         db = current.db
         for key,val in dictionary.iteritems():
             # Update the key value for this module if it already exists
-            db.module_values.update_or_insert((db.module_values.name == key) & (db.module_values.modulename == self.procedure_name),
+            db.module_values.update_or_insert((db.module_values.name == key) & (db.module_values.procedure_id == self.procedure_name),
                                               time_stamp=datetime.datetime.utcnow(),
-                                              modulename=self.procedure_name,
+                                              procedure_id=self.procedure_name,
                                               name=key,
                                               module_value=json_plus.Serializable.dumps(val))
         db.commit()

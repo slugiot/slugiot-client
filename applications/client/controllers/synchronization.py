@@ -38,6 +38,21 @@ def add_output():
     return response.json({"output_key" : output_key, "output_value" : output_value})
 
 
+def set_value():
+    key = "synchronization_example"
+    if ('key' in request.vars):
+        key = request.vars.key
+    value = datetime.utcnow()
+    if ('value' in request.vars):
+        value = request.vars.value
+    values = dict()
+    values[key] = value
+    import procedureapi
+    api = procedureapi.ProcedureApi("Synchronization")
+    api.write_value(values)
+    return response.json({"values":values})
+
+
 
 
 
@@ -75,6 +90,26 @@ def synchronize_outputs():
         return response.json(slugiot_synchronization.get_data_for_synchronization(slugiot_setup, "outputs"))
     def POST(*args, **vars):
         if (slugiot_synchronization.synchronize(slugiot_setup, "outputs")):
+            return "ok"
+        else:
+            return "failure"
+
+    return locals()
+
+
+@request.restful()
+def synchronize_module_values():
+    """
+    This function syncs the information to the server. The data from  __get_log_data is serialized into JSON and posted on the server url = server_url + "/synchronization/receive_logs"
+    and a 200 status code indicates successful posting of information and the synchronization_events time_stamps are updated or an error is sent in the response along with the time_stamp
+
+       :return: Dictionary containing whether the request posted is a success or not and the latest synchronization time_stamp
+       :rtype: Dictionary
+    """
+    def GET(*args, **vars):
+        return response.json(slugiot_synchronization.get_data_for_synchronization(slugiot_setup, "module_values"))
+    def POST(*args, **vars):
+        if (slugiot_synchronization.synchronize(slugiot_setup, "module_values")):
             return "ok"
         else:
             return "failure"
