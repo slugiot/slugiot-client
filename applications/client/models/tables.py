@@ -72,6 +72,15 @@ db.define_table('synchronization_events',
                 Field('time_stamp', 'datetime', default=datetime.utcnow()),
                 )
 
+# State of the procedure when last run.
+# Note: when we synch this, we always have to keep at least one entry.
+db.define_table('procedure_state',
+                Field('procedure_id'),
+                Field('class_name'), # Name of the class that run in the procedure.
+                Field('procedure_state', 'text'),
+                Field('time_stamp', 'datetime', default=datetime.utcnow())
+                )
+
 # Let's initialize the setup.
 import slugiot_setup
 slugiot_setup = slugiot_setup.SlugIOTSetup()
