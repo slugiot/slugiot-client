@@ -21,7 +21,9 @@ def synchronize(setup_info, table_name):
             try:
                 # Let's get the device id.
                 # There is something to synch
-                body = json_plus.Serializable.dumps(dict(device_id=setup_info.device_id,logs=rows))
+                data = dict(device_id=setup_info.device_id)
+                data[table_name] = rows
+                body = json_plus.Serializable.dumps(data)
                 url = (setup_info.server_url + "/synchronization/receive_" +
                        urllib.quote(table_name)
                        )

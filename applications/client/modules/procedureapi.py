@@ -46,7 +46,7 @@ class ProcedureApi():
         param data : The value of the output
         Param tag: This is the ID of the sensor (or additional data to differentiate the outputs)"""
         db = current.db
-        db.outputs.insert(modulename=self.procedure_name,
+        db.outputs.insert(procedure_id=self.procedure_name,
                           name=name,
                           output_value=json_plus.Serializable.dumps(data),
                           time_stamp=datetime.datetime.utcnow(),
