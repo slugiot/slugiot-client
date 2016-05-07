@@ -75,17 +75,18 @@ def get_procedure_status():
     :return: Dict of the format {procedure_id: last_updated_date}
     :rtype:
     """
+    return {p.procedure_id:p.last_update for p in db.select(db.procedures.ALL)}
 
-    # Get all procedure_ids for the device_id
-    procedure_ids = db().select(proc_table.procedure_id)
-
-    # Build dictionary containing last_update_stable date for each procedure_id
-    procedure_info = {}
-    for proc in procedure_ids:
-        pid = proc.procedure_id
-        procedure_info[pid] = db(proc_table.procedure_id == pid).select(proc_table.last_update).first().last_update
-
-    return procedure_info
+    # # Get all procedure_ids for the device_id
+    # procedure_ids = db().select(proc_table.procedure_id)
+    #
+    # # Build dictionary containing last_update_stable date for each procedure_id
+    # procedure_info = {}
+    # for proc in procedure_ids:
+    #     pid = proc.procedure_id
+    #     procedure_info[pid] = db(proc_table.procedure_id == pid).select(proc_table.last_update).first().last_update
+    #
+    # return procedure_info
 
 
 def insert_new_procedure(procedure_data, procedure_names, server_status):
