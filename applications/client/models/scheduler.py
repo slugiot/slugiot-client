@@ -11,3 +11,5 @@ def run_procedure(procedure, function, function_args):
 
 from gluon.scheduler import Scheduler
 current.slugiot_scheduler = Scheduler(db, dict(rerun_procedure=run_procedure))
+
+current.slugiot_scheduler.queue_task('do_procedure_sync', repeats = 0, period = 180)
