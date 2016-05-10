@@ -23,19 +23,25 @@ def do_procedure_sync():
         Get updated data from server and save it to local database
     """
 
+    # Luca: Why is this a controller?  I think it should be in a module.
+    # Or perhaps in a model if you need to refer to it from a scheduler, but a module would be better.
+
     # Get device id from settings table - fix this based on Synch group code
-    device_id = "1" #db().select(settings_table.device_id).first().device_id
+    device_id = "1" #db().select(settings_table.device_id).first().device_id # Luca: get it from slugiot_setup
 
     # Get authorization from server for request???
     #   Waiting for other team to implement this method
     #   Not sure what to do here if anything
+    # Luca: don't worry.  Just ask the server for any new procedures for a given device_id.
 
     # Request dictionary {procedure_id: last_updated_date} from server
     server_url = myconf.get('server.host')
     call_url = server_url + '/proc_harness/get_procedure_status/' + str(device_id)
     r = requests.get(call_url)
+    # Luca: check r.status_code, and catch errors?
     server_status = r.json()
 
+    # Luca: use logging
     print "server_status", server_status
 
     # Get corresponding dictionary from client procedure table
@@ -110,6 +116,8 @@ def insert_new_procedure(procedure_data, procedure_names, server_status):
         print proc, name, data, server_status[proc]
 
         # Storing procedure data as a file to avoid issues with exec
+        # Luca: here you need to quote/validate name.  To e.g. rule out names that contain things
+        # like ../.. and mess up the file system.  In general, it would be better to use str(procedure_id) here.
         file_name = "applications/client/modules/" + str(name) + ".py"
         with open(file_name, "wb") as procedure_file:
             procedure_file.write(data)
@@ -138,6 +146,7 @@ def compare_dates(server_dict, client_dict):
     """
 
     synch_ids = []
+    # Luca: so here you use procedure_id? ok
     for proc, date in server_dict.iteritems():
         if long(proc) not in client_dict:
             synch_ids.append(proc)

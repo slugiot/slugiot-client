@@ -79,7 +79,7 @@ class Serializable(object):
         return json.dumps(obj, default=custom, indent=2)
 
     @staticmethod
-    def from_json(s, objectify=True, to_camarray=False):
+    def from_json(s, objectify=True):
         def hook(o):
             meta_module, meta_class = None, o.get('meta_class')
             if meta_class in ('Datetime', 'datetime.datetime'):
