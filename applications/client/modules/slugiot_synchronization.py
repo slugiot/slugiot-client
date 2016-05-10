@@ -108,58 +108,42 @@ def add_sync_schedule(self,
     current.db.commit()
 
 
-# 
-# class SlugIOTSynchronization():
-#     def some_function(self):
-#         db = current.db
-#         print "hello world"
-# 
-#     def synchronize_logs(self):
-#         synchronized_timestamp = datetime.utcnow()
-#         data = self.__get_log_data(synchronized_timestamp)
-#         url = server_url + "/synchronization/receive_logs"
-#         json_data = serializers.json(data)
-#         sync_response = requests.post(url=url, data=json_data)
-#         if (sync_response.status_code == 200):
-#             #success
-#             self._set_last_synchronized("logs", synchronized_timestamp)
-#             return dict(success=True,timestamp=synchronized_timestamp)
-#         else:
-#             #failure
-#             error = sync_response.content
-#             return dict(
-#                     success=False,
-#                     timestamp=synchronized_timestamp,
-#                     error=error,
-#                     server_url=url,
-#                 )
-# 
-#     """
-#     This function takes in a table_name (logs, outputs, etc) and returns the latest timestamp the data was synchronized
-# 
-#        :param p1: table_name
-#        :type p1: str
-#        :return: Timestamp of latest entry in a database table
-#        :rtype: datetime
-#     """
-# 
-#     def _get_last_synchronized(self, table_name):
-#         timestamp = db(db.synchronization_events.table_name == table_name).select(db.synchronization_events.time_stamp,
-#                                                                                   orderby="time_stamp DESC",
-#                                                                                   limitby=(0, 1))
-#         if (not timestamp):
-#             return datetime.fromtimestamp(0)
-#         return timestamp[0].time_stamp
-# 
-#     """
-#     This function takes in a table_name and timestamp and inserts in into the synchronization_events table
-# 
-#        :param p1: table_name
-#        :type p1: str
-#        :param p1: timestamp
-#        :type p1: str
-#     """
-# 
-#     def _set_last_synchronized( self, table_name, timestamp):
-#         db.synchronization_events.insert(table_name=table_name, time_stamp=timestamp)
-# 
+def synchronize_settings(setup_info):
+
+    # get device id
+    # get last synchronized time for 'settings' table
+    # make call to server at /synchronize
+    # parse setting information (    json_plus.Serializable.loads)
+    # if no setting info, return True
+    # pass settings to save_settings
+    # if success, return true, else return false
+
+    return True
+
+
+
+def save_settings(setup_info, setting_data):
+    """
+    This function receives the setting information and saves it
+    """
+
+    db = setup_info.db
+    settings = setup_info.settings
+    synchronize_time = get_last_synchronized('settings')
+
+    try:
+        # we use setup_info.settings (from SlugIOTSettings object)
+        for setting in setting_data:
+            settings.set_setting_value(setting['setting_name'], setting['setting_value'], setting['procedure_id'])
+            # getting last updated time
+            # if ('last_updated' in setting and isinstance(setting['last_updated'], datetime) and setting['last_updated'] > synchronize_time):
+            if (setting['last_updated'] > synchronize_time):
+                synchronize_time = setting['last_updated']
+
+        return True
+    except Exception, _:
+        # We failed synch.  We write this to the logs.
+        db.logs.insert(procedure_id=None, log_level = LogLevel.WARN,
+                       log_message="Synch failed for settings: %s" % traceback.format_exc())
+
+    return False

@@ -23,6 +23,10 @@ class SlugIOTSettings():
             db.settings.setting_name == setting_name and db.settings.procedure_id == procedure_id,
             setting_name=setting_name, setting_value=setting_value, procedure_id=procedure_id)
 
+    def get_all_settings(self):
+        db = current.db
+        return db(db.settings).select().as_list()
+
 
     """
     These are accessors for global settings
