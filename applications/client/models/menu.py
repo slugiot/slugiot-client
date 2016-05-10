@@ -5,11 +5,16 @@
 ## Customize your APP title, subtitle and menus here
 #########################################################################
 
-response.logo = A(B('SlugIOT'),XML('&trade;&nbsp;'),
-                  _class="navbar-brand",_href=URL('default','index'),
-                  _id="slugiot_logo")
-response.title = request.application.replace('_',' ').title()
+response.logo = response.logo = A(IMG(_src=URL('static', 'images/logo.png')), _id="web2py-logo",
+                                  _href=URL('default', 'index'), _class="navbar-brand")
+
+response.title = 'SlugIOT Client'
 response.subtitle = ''
+# response.logo = A(B('SlugIOT'),XML('&trade;&nbsp;'),
+#                   _class="navbar-brand",_href=URL('default','index'),
+#                   _id="slugiot_logo")
+# response.title = request.application.replace('_',' ').title()
+# response.subtitle = ''
 
 ## read more at http://dev.w3.org/html5/markup/meta.name.html
 response.meta.author = myconf.get('app.author')
