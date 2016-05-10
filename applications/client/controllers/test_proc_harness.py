@@ -35,6 +35,8 @@ def clear_tables():
 
     proc_table.truncate()
 
+    if db(proc_table).isempty():
+        logger.info("Client Table Cleared")
     return "Tables Cleared on Server and Client"
 
 def new_proc_test():
