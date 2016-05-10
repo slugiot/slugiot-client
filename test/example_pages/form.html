@@ -1,0 +1,170 @@
+<<!DOCTYPE html>
+<html>
+<head>
+    <title>SlugIOT Form Testing Example</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
+
+        <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <style type="text/css">
+        /*
+         * General styles
+         */
+
+        body, html{
+             height: 100%;
+            background-repeat: no-repeat;
+            background-color: #d3d3d3;
+            font-family: 'Oxygen', sans-serif;
+        }
+
+        .main{
+            margin-top: 70px;
+        }
+
+        h1.title { 
+            font-size: 50px;
+            font-family: 'Passion One', cursive; 
+            font-weight: 400; 
+        }
+
+        hr{
+            width: 10%;
+            color: #fff;
+        }
+
+        .form-group{
+            margin-bottom: 15px;
+        }
+
+        label{
+            margin-bottom: 15px;
+        }
+
+        input,
+        input::-webkit-input-placeholder {
+            font-size: 11px;
+            padding-top: 3px;
+        }
+
+        .main-login{
+            background-color: #fff;
+            /* shadows and rounded borders */
+            -moz-border-radius: 2px;
+            -webkit-border-radius: 2px;
+            border-radius: 2px;
+            -moz-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+            -webkit-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+            box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+
+        }
+
+        .main-center{
+            margin-top: 30px;
+            margin: 0 auto;
+            max-width: 330px;
+            padding: 40px 40px;
+
+        }
+
+        .login-button{
+            margin-top: 5px;
+        }
+
+        .login-register{
+            font-size: 11px;
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+            <div class="row main">
+                <div class="panel-heading">
+                   <div class="panel-title text-center">
+                        <h1 class="title">SlugIOT Example Form</h1>
+                        <hr />
+                    </div>
+                </div>
+                <div class="main-login main-center">
+                    <form class="form-horizontal" method="post" action="http://requestb.in/q6bf4yq6" id='example-form'>
+                        <div class="form-group">
+                            <label for="name_input" class="cols-sm-2 control-label">Your Name</label>
+                            <div class="cols-sm-10">
+                                <div class="input-group">
+                                    <span class="input-group-addon"><i class="fa fa-user fa" aria-hidden="true"></i></span>
+                                    <input type="text" class="form-control" name="name" id="name"  placeholder="Enter your Name"/>
+                                </div>
+                                <label class="error" for="name" generated="true"></label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email_input" class="cols-sm-2 control-label">Your Email</label>
+                            <div class="cols-sm-10">
+                                <div class="input-group">
+                                    <span class="input-group-addon"><i class="fa fa-envelope fa" aria-hidden="true"></i></span>
+                                    <input type="text" class="form-control" name="email" id="email"  placeholder="Enter your Email"/>
+                                </div>
+                                <label class="error" for="email" generated="true"></label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password_input" class="cols-sm-2 control-label">Password</label>
+                            <div class="cols-sm-10">
+                                <div class="input-group">
+                                    <span class="input-group-addon"><i class="fa fa-lock fa-lg" aria-hidden="true"></i></span>
+                                    <input type="password" class="form-control" name="password" id="password"  placeholder="Enter your Password"/>
+                                </div>
+                                <label class="error" for="password" generated="true"></label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirm_input" class="cols-sm-2 control-label">Confirm Password</label>
+                            <div class="cols-sm-10">
+                                <div class="input-group">
+                                    <span class="input-group-addon"><i class="fa fa-lock fa-lg" aria-hidden="true"></i></span>
+                                    <input type="password" class="form-control" name="confirm" id="confirm"  placeholder="Confirm your Password"/>
+                                </div>
+                                <label class="error" for="confirm" generated="true"></label>
+                            </div>
+                        </div>
+
+                        <div class="form-group ">
+                            <input id="submit" type="submit" class="btn btn-primary btn-lg btn-block login-button" value="Register"></input>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </body>
+
+    <script   src="https://code.jquery.com/jquery-2.2.3.min.js"   integrity="sha256-a23g1Nt4dtEYOj7bR+vTu7+T8VP13humZFBJNIYoEJo="   crossorigin="anonymous"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="http://cdn.jsdelivr.net/jquery.validation/1.15.0/jquery.validate.min.js"></script>
+    <script type="text/javascript">
+        $('#example-form').validate({
+          rules: {
+            name: {
+                required: true,
+                maxlength: 20,
+            },
+            // compound rule
+            email: {
+              required: true,
+              email: true
+            },
+            password : {
+                    minlength : 5
+                },
+            confirm : {
+                equalTo : "#password"
+            }
+          }
+        });
+    </script>
+</html>
