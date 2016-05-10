@@ -25,7 +25,7 @@ from datetime import datetime
 ############### Procedure Harness Table ###############
 
 db.define_table('procedures',
-                Field('procedure_id', 'bigint', required=True),  # key
+                Field('procedure_id', 'bigint', required=True, unique=True),  # key
                 Field('last_update', 'datetime', default=datetime.utcnow(), required=True),
                 Field('name', 'string') # Name of procedure
                 )
