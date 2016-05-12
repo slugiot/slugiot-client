@@ -1,9 +1,19 @@
+###########################################################
+# SELENIUM TESTS FOR PROCEDURE HARNESS
+# to run: rm server_log.txt and client_log.txt from client logs directory
+#         launch client and server with stderr redirected to client_log.txt and server_log.txt
+#         run proc_harness_tests_automated.py
+#
+# Functionality tested:
+#      1. New procedure created on server gets synched to file on client
+#      2. Stable edit to any existing procedure gets synched to file on client
+#      3. Unstable edit to any existing procedure DOES NOT get synched to file on client
+###########################################################
+
 import unittest
 from selenium import webdriver
-import time
 import os
-from pdb import set_trace
-from subprocess import Popen, PIPE
+#from subprocess import Popen, PIPE
 demo_time = 60
 
 class ProcHarnessTest(unittest.TestCase):
@@ -13,16 +23,16 @@ class ProcHarnessTest(unittest.TestCase):
 
         normalizedPath_c = os.path.abspath(os.getcwd() + "/../logs/client_log.txt")
         normalizedPath_s = os.path.abspath(os.getcwd() + "/../logs/server_log.txt")
-        normalizedPath = os.path.abspath(os.getcwd() + "/../web2py.py")
+        #normalizedPath = os.path.abspath(os.getcwd() + "/../web2py.py")
 
         self.client_log = open(normalizedPath_c, "r")
         self.server_log = open(normalizedPath_s, "r")
 
-        p_c = Popen("python " + normalizedPath + " -p 7999 -a blah 2>> " + normalizedPath_c + " 1>>/dev/null", shell=True)
-        p_s = Popen("python " + normalizedPath + " -p 8000 -a blah 2>> " + normalizedPath_s + " 1>>/dev/null", shell=True)
+        #p_c = Popen("python " + normalizedPath + " -p 7999 -a blah 2>> " + normalizedPath_c + " 1>> " + os.devnull, shell=True)
+        #p_s = Popen("python " + normalizedPath + " -p 8000 -a blah 2>> " + normalizedPath_s + " 1>> " + os.devnull, shell=True)
 
-        self.pid_c = p_c.pid
-        self.pid_s = p_s.pid
+        #self.pid_c = p_c.pid
+        #self.pid_s = p_s.pid
 
         self.client_test_url = 'http://127.0.0.1:7999/test_proc_harness'
         self.proc_dir = os.path.abspath(os.getcwd() + "/../applications/client/modules/")
@@ -93,8 +103,8 @@ class ProcHarnessTest(unittest.TestCase):
         self.assertFalse(no_update_proc)
 
     def tearDown(self):
-        Popen(["kill", "-SIGTERM", str(self.pid_c)])
-        Popen(["kill", "-SIGTERM", str(self.pid_s)])
+        #os.killpg(os.getpgid(self.pid_c), signal.SIGTERM)
+        #os.killpg(os.getpgid(self.pid_s), signal.SIGTERM)
 
         self.driver.quit()
         self.client_log.close()
