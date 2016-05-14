@@ -115,3 +115,23 @@ def synchronize_module_values():
             return "failure"
 
     return locals()
+
+
+@request.restful()
+def synchronize_settings():
+    """
+    This function retrieves setting data from the server based on a timestamp (of last sync) and device_id.
+    If there are changes, it applies them to the client's settings.
+    """
+
+    def GET(*args, **vars):
+        return response.json(settings.get_all_settings())
+
+    def POST(*args, **vars):
+        if (slugiot_synchronization.synchronize_settings(slugiot_setup)):
+            return "ok"
+        else:
+            return "failure"
+
+    return locals()
+

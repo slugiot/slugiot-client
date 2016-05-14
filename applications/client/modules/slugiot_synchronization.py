@@ -1,4 +1,5 @@
 import json_plus
+import json
 import urllib
 from slugiot_setup import  LogLevel
 import traceback
@@ -107,59 +108,54 @@ def add_sync_schedule(self,
         retry_failed=num_retries)
     current.db.commit()
 
+def synchronize_settings(setup_info):
+        # get device id
+        # get last synchronized time for 'settings' table
+        db = setup_info.db
+        synchronize_time = get_last_synchronized(db, 'settings')
+        body = dict(device_id=setup_info.device_id, last_updated=synchronize_time)  # , last_updated = synchronize_time)
+        # make call to server at /synchronize
+        url = (setup_info.server_url + "/synchronization/get_settings")
+        result = requests.get(url=url, params=body)
+        if (not result):
+            return True
+        # returns error when we need to parse the setting information to python object/
+        data = json_plus.Serializable.loads(result.content)
+        # parse setting information (    json_plus.Serializable.loads)
+        try:
+            # pass settings to save_settings
+            # if success, return true, else return false
+            save_settings(setup_info, data)
+            return True
+        except Exception, _:
+            # We failed synch.  We write this to the logs.
+            db.logs.insert(procedure_id=None, log_level=LogLevel.WARN,
+                           log_message="Synch failed for settings: %s" % traceback.format_exc())
+        return False
 
-# 
-# class SlugIOTSynchronization():
-#     def some_function(self):
-#         db = current.db
-#         print "hello world"
-# 
-#     def synchronize_logs(self):
-#         synchronized_timestamp = datetime.utcnow()
-#         data = self.__get_log_data(synchronized_timestamp)
-#         url = server_url + "/synchronization/receive_logs"
-#         json_data = serializers.json(data)
-#         sync_response = requests.post(url=url, data=json_data)
-#         if (sync_response.status_code == 200):
-#             #success
-#             self._set_last_synchronized("logs", synchronized_timestamp)
-#             return dict(success=True,timestamp=synchronized_timestamp)
-#         else:
-#             #failure
-#             error = sync_response.content
-#             return dict(
-#                     success=False,
-#                     timestamp=synchronized_timestamp,
-#                     error=error,
-#                     server_url=url,
-#                 )
-# 
-#     """
-#     This function takes in a table_name (logs, outputs, etc) and returns the latest timestamp the data was synchronized
-# 
-#        :param p1: table_name
-#        :type p1: str
-#        :return: Timestamp of latest entry in a database table
-#        :rtype: datetime
-#     """
-# 
-#     def _get_last_synchronized(self, table_name):
-#         timestamp = db(db.synchronization_events.table_name == table_name).select(db.synchronization_events.time_stamp,
-#                                                                                   orderby="time_stamp DESC",
-#                                                                                   limitby=(0, 1))
-#         if (not timestamp):
-#             return datetime.fromtimestamp(0)
-#         return timestamp[0].time_stamp
-# 
-#     """
-#     This function takes in a table_name and timestamp and inserts in into the synchronization_events table
-# 
-#        :param p1: table_name
-#        :type p1: str
-#        :param p1: timestamp
-#        :type p1: str
-#     """
-# 
-#     def _set_last_synchronized( self, table_name, timestamp):
-#         db.synchronization_events.insert(table_name=table_name, time_stamp=timestamp)
-# 
+
+def save_settings(setup_info, setting_data):
+    """
+    This function receives the setting information and saves it
+    """
+
+    db = setup_info.db
+    settings = setup_info.settings
+    synchronize_time = get_last_synchronized(db, 'settings')
+
+    try:
+        # we use setup_info.settings (from SlugIOTSettings object)
+        for setting in setting_data:
+            settings.set_setting_value(setting['setting_name'], setting['setting_value'], setting['procedure_id'])
+            # getting last updated time
+            # if ('last_updated' in setting and isinstance(setting['last_updated'], datetime) and setting['last_updated'] > synchronize_time):
+            if (setting['last_updated'] > synchronize_time):
+                synchronize_time = setting['last_updated']
+
+        return True
+    except Exception, _:
+        # We failed synch.  We write this to the logs.
+        db.logs.insert(procedure_id=None, log_level=LogLevel.WARN,
+                       log_message="Synch failed for settings: %s" % traceback.format_exc())
+
+    return False

@@ -72,13 +72,17 @@ db.define_table('synchronization_events',
                 Field('time_stamp', 'datetime', default=datetime.utcnow()),
                 )
 
+# initialize settings manager
+import slugiot_settings
+settings = slugiot_settings.SlugIOTSettings()
+
 # Let's initialize the setup.
 import slugiot_setup
 slugiot_setup = slugiot_setup.SlugIOTSetup()
 slugiot_setup.db = db
 slugiot_setup.server_url = server_url
-device_id_row = db(db.settings.setting_name == 'device_id').select().first()
-slugiot_setup.device_id = None if device_id_row is None else device_id_row.setting_value
+slugiot_setup.settings = settings
+slugiot_setup.device_id = settings.get_device_id()
 
 
 
