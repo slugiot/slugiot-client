@@ -8,7 +8,6 @@ from datetime import datetime;
 import requests
 from dateutil.parser import parse as parse_date
 
-
 sync_lock = threading.Lock()
 
 
@@ -80,7 +79,7 @@ def synchronize_settings(setup_info):
         result = requests.get(url=url, params=body)
         if (not result):
             return True
-        # returns error when we need to parse the setting information to python object/
+        # returns error when we need to parse the setting information to python objec
         data = json_plus.Serializable.loads(result.content)
         # parse setting information (    json_plus.Serializable.loads)
         try:
@@ -109,9 +108,15 @@ def save_settings(setup_info, setting_data):
         for setting in setting_data:
             settings.set_setting_value(setting['setting_name'], setting['setting_value'], setting['procedure_id'])
             # getting last updated time
-            # if ('last_updated' in setting and isinstance(setting['last_updated'], datetime) and setting['last_updated'] > synchronize_time):
-            if (setting['last_updated'] > synchronize_time):
-                synchronize_time = setting['last_updated']
+            last_updated = setting['last_updated']
+            last_updated_datetime = last_updated
+            if (not isinstance(last_updated, datetime)):
+                last_updated_datetime = parse_date(last_updated)
+
+            if ( last_updated_datetime > synchronize_time):
+                synchronize_time = last_updated_datetime
+
+        set_last_synchronized(db, 'settings', synchronize_time)
 
         return True
     except Exception, _:
