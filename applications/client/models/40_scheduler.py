@@ -16,10 +16,18 @@ def scheduled_synchronize():
     slugiot_synchronization.synch_all(slugiot_setup, ['logs', 'outputs'])
 
 
+########
+def test_scheduler():
+    print 'Test'
+    return 'done!'
+#########
 from gluon.scheduler import Scheduler
 current.slugiot_scheduler = Scheduler(db, dict(rerun_procedure=run_procedure,
-                                               do_synchronization=scheduled_synchronize))
-# current.slugiot_scheduler.queue_task('do_synchronization', period=10, repeats=0)
+                                               do_synchronization=scheduled_synchronize,
+                                               test_scheduler=test_scheduler))
+current.slugiot_scheduler.queue_task(function='test_scheduler', period=5, repeats=1, timeout=60,
+                                    immediate=True,)
+current.db.commit()
 # --with-scheduler --scheduler=client
 
 
