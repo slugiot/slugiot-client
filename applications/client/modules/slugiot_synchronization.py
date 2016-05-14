@@ -120,7 +120,7 @@ def synchronize_settings(setup_info):
         if (not result):
             return True
         # returns error when we need to parse the setting information to python object/
-        data = json_plus.Serializable.loads(result)
+        data = json_plus.Serializable.loads(result.content)
         # parse setting information (    json_plus.Serializable.loads)
         try:
             # pass settings to save_settings
