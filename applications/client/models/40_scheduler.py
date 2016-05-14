@@ -1,4 +1,7 @@
 # Web2py Scheduler
+# Here we define what functions we may want to schedule, and then create the scheduler
+# DO NOT enqueue tasks here!  This is run on every page request, so we want to have
+# the enqueuing of things happen somewhere else.
 
 def run_procedure(procedure, function, function_args):
     proc = __import__(procedure)
@@ -13,21 +16,20 @@ def run_procedure(procedure, function, function_args):
 
 def scheduled_synchronize():
     import slugiot_synchronization
-    slugiot_synchronization.synch_all(slugiot_setup, ['logs', 'outputs'])
+    slugiot_synchronization.synch_all_c2s(slugiot_setup)
+    slugiot_synchronization.synchronize_settings(slugiot_setup)
 
 
-########
 def test_scheduler():
-    print 'Test'
-    return 'done!'
-#########
+    print 'the scheduler is working'
+
+
 from gluon.scheduler import Scheduler
 current.slugiot_scheduler = Scheduler(db, dict(rerun_procedure=run_procedure,
-                                               do_synchronization=scheduled_synchronize,
+                                               synchronize=scheduled_synchronize,
                                                test_scheduler=test_scheduler))
-current.slugiot_scheduler.queue_task(function='test_scheduler', period=5, repeats=1, timeout=60,
-                                    immediate=True,)
-current.db.commit()
+
+# For running the server with the scheduler:
 # --with-scheduler --scheduler=client
 
 

@@ -68,7 +68,7 @@ def synchronize_logs():
     def GET(*args, **vars):
         return response.json(slugiot_synchronization.get_data_for_synchronization(slugiot_setup, "logs"))
     def POST(*args, **vars):
-        if (slugiot_synchronization.synchronize(slugiot_setup, "logs")):
+        if (slugiot_synchronization.synchronize_c2s(slugiot_setup, "logs")):
             return "ok"
         else:
             return "failure"
@@ -89,7 +89,7 @@ def synchronize_outputs():
     def GET(*args, **vars):
         return response.json(slugiot_synchronization.get_data_for_synchronization(slugiot_setup, "outputs"))
     def POST(*args, **vars):
-        if (slugiot_synchronization.synchronize(slugiot_setup, "outputs")):
+        if (slugiot_synchronization.synchronize_c2s(slugiot_setup, "outputs")):
             return "ok"
         else:
             return "failure"
@@ -109,7 +109,7 @@ def synchronize_module_values():
     def GET(*args, **vars):
         return response.json(slugiot_synchronization.get_data_for_synchronization(slugiot_setup, "module_values"))
     def POST(*args, **vars):
-        if (slugiot_synchronization.synchronize(slugiot_setup, "module_values")):
+        if (slugiot_synchronization.synchronize_c2s(slugiot_setup, "module_values")):
             return "ok"
         else:
             return "failure"
