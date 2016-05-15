@@ -5,6 +5,7 @@ import sys
 import requests
 import logging
 import os
+from string import ascii_letters, digits
 import slugiot_settings as ss
 from gluon.contrib.appconfig import AppConfig
 
@@ -128,12 +129,14 @@ def insert_new_procedure(procedure_data, procedure_names, server_status):
                 os.utime(init_file_name, None)
 
         # Storing procedure data as a file
-        file_name = proc_directory + "/" + str(name) + ".py"
+        file_name = proc_directory + "/" + name_valid
+        if file_name.find(".py") == -1:
+            file_name = file_name + ".py"
         with open(file_name, "wb") as procedure_file:
             procedure_file.write(data)
 
         # When procedures get updated old schedules should be removed so new schedules can be scheduled
-        api = procedureapi.ProcedureApi(str(name))
+        api = procedureapi.ProcedureApi(name_valid)
         api.remove_schedule()
         api.add_schedule()
 
