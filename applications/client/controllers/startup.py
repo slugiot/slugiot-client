@@ -1,23 +1,13 @@
 def start():
-    """Here we need to load the scheduler with the correct schedules,
-    avoiding any duplication . See the slugiot_synchronization module."""
-    # REMOVE similar things from the scheduler.
-    db(db.scheduler_task.task_name == 'synch').delete()
-    slugiot_scheduler.queue_task(
-        task_name='synch',
-        function='do_synchronization',
-        pvars={},
-        repeats=0,
-        period=60,
-        retry_failed=0)
-    current.db.commit();
+    """Here we are acting as though the synchronizations have never yet been run.  An
+    improvement would be to first check if run previously and avoid the extra steps
+    of removing and adding back schedules again.
+    This function is called by the slugiot_startup.sh script which runs at device starup.
+    """
+    api = procedureapi.ProcedureApi("do_synchronization")
+    api.remove_schedule()
+    api.add_schedule()
 
-    db(db.scheduler_task.task_name == 'proc_synch').delete()
-    slugiot_scheduler.queue_task(
-        task_name='synch',
-        function='do_procedure_sync',
-        pvars={},
-        repeats=0,
-        period=60,
-        retry_failed=0)
-    current.db.commit();
+    api = procedureapi.ProcedureApi("do_procedure_sync")
+    api.remove_schedule()
+    api.add_schedule()
