@@ -35,7 +35,7 @@ class ProcHarnessTest(unittest.TestCase):
         #self.pid_s = p_s.pid
 
         self.client_test_url = 'http://127.0.0.1:7999/test_proc_harness'
-        self.proc_dir = os.path.abspath(os.getcwd() + "/../applications/client/modules/")
+        self.proc_dir = os.path.abspath(os.getcwd() + "/../applications/client/modules/procedures")
 
     def test_clear_tables(self):
         server = False
