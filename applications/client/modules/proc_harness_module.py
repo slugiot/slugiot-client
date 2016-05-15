@@ -1,9 +1,10 @@
-import procedureapi as api
+import procedureapi
 import json
 from gluon import current
 import sys
 import requests
 import logging
+import os
 import slugiot_settings as ss
 from gluon.contrib.appconfig import AppConfig
 
@@ -117,15 +118,24 @@ def insert_new_procedure(procedure_data, procedure_names, server_status):
 
         logger.debug(str(proc) + " " + str(name) + " " + str(data) + " " + str(server_status[proc]))
 
-        # Storing procedure data as a file to avoid issues with exec
-        file_name = "applications/client/modules/" + str(name) + ".py"
+        proc_directory = "applications/client/modules/procedures"
+        init_file_name = proc_directory + "/" + "__init__.py"
+
+        # Create procedure directory if it does not exist
+        if not os.path.exists(proc_directory):
+            os.makedirs(proc_directory)
+            with open(init_file_name, "a"):
+                os.utime(init_file_name, None)
+
+        # Storing procedure data as a file
+        file_name = proc_directory + "/" + str(name) + ".py"
         with open(file_name, "wb") as procedure_file:
             procedure_file.write(data)
 
         # When procedures get updated old schedules should be removed so new schedules can be scheduled
-        #api_obj = api.ProcedureApi(name)
-        #api_obj.remove_all_schedules()
-        #api_obj.add_schedule("run", repeats=1)
+        api = procedureapi.ProcedureApi(str(name))
+        api.remove_schedule()
+        api.add_schedule()
 
         proc_table.update_or_insert(proc_table.procedure_id == proc,
                                     procedure_id = proc,
