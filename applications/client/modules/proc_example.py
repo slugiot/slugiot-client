@@ -7,19 +7,19 @@ GPIO.setup(12, GPIO.OUT)
 
 HYSTERESIS = 1.0
 
-class Thermostat(Procedure):
+
+class DeviceProdecure(Procedure):
     """Every procedure subclasses ProcedureAPI.
     The API is then accessible in self.api"""
-
-    def __init__(self): self.api = None
 
     def init(self):
         """Any global initialization happens here."""
         self.is_on = False # State is preserved between invocations.
+        # Run once per day
+        self.api.add_schedule(class_name='DeviceProcedure', repeats=10, period_between_runs=86400)
 
     def run(self):
         """The execution starts from the run method."""
-        self.api.add_schedule(delay=60) # We reschedule ourselves in 60 seconds.
         temp = self.read_temp()
         self.api.log_info("Read temperature: %r" % temp)
         self.api.write_output('temp', temp)
