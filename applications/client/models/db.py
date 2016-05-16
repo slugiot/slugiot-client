@@ -112,5 +112,5 @@ settings = slugiot_settings.SlugIOTSettings()
 
 # Initialize the synchroniztion interface
 import slugiot_synchronization
-synchronization = slugiot_synchronization.SlugIOTSynchronization()
+# synchronization = slugiot_synchronization.SlugIOTSynchronization()
 

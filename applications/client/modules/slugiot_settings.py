@@ -39,35 +39,3 @@ class SlugIOTSettings():
 
     def set_device_id(self, device_id):
         return self.set_setting_value(SlugIOTSettings.DEVICE_ID_KEY, device_id)
-
-
-def check_device_id():
-    """
-    Check if device ID exists already
-
-    :return: True if exists, False if not.
-    :rtype: bool
-    """
-    settings_file = os.path.join(os.getcwd(),'device_settings.py')
-    _config = {}
-
-    # Check for the device settings file.
-    # The file should be present only if a device ID has been added
-    if os.path.isfile(settings_file):
-        restricted(read_file(settings_file), _config)
-        if not 'device_id' in _config or not _config['device_id']:
-            return None
-        else:
-            return _config['device_id']
-    else:
-        return None
-
-def set_device_id(entry=None):
-    """
-    Get the ID for device
-    :return:
-    :rtype:
-    """
-    settings_file = os.path.join(os.getcwd(),'device_settings.py')
-    # if entry is not None:
-    write_file(settings_file, entry)

@@ -10,84 +10,65 @@
 import slugiot_settings
 
 
+def _device_id_exists():
+    """
+    Check for device ID being present.
+    It makes two checks:
+        1. Whether there's a setting called device_id or not
+        2. Whether the setting device_id has any value or not
+    :return:
+    :rtype:
+    """
+    device_id_row = db(db.settings.setting_name == 'device_id').select().first()
+    device_id = device_id_row.setting_value if device_id_row is not None else None
+    return True if device_id is not None else False
+
+
 def index():
     """
-    example action using the internationalization operator T and flash
-    rendered by views/default/index.html or views/generic.html
+    Index page for the client.
 
-    if you need a simple wiki simply replace the two lines below with:
-    return auth.wiki()
+    Shows option to set/view a device ID based on whether the ID exists or not
     """
-    response.flash = T("Hello")
-
     # Check if settings exist already
-    if not slugiot_settings.check_device_id():
+    if not _device_id_exists():
         message = T('Welcome to SlugIOT Client. Please register device')
-        settings = A("Click here to initialize your device", _href=URL('default','settings',vars={'new':True}), _class = 'btn btn-primary')
+        settings = A("Click here to initialize your device", _href=URL('default', 'settings', vars={'new': True}),
+                     _class='btn btn-primary')
     else:
         message = T('This device is registered')
-        settings = A("Click here to see/edit device settings", _href=URL('default','settings'), _class = 'btn btn-success')
-    return dict(message=message, settings =settings)
+        settings = A("Click here to see/edit device settings", _href=URL('default', 'settings'),
+                     _class='btn btn-success')
+    return dict(message=message, settings=settings)
 
 
 def settings():
     """
     Settings page for the device to set device ID.
     """
-    # Get device ID
-    device_id = slugiot_settings.check_device_id() if slugiot_settings.check_device_id() is not None else ""
-    settings_dict = dict(device_id=device_id)
+    device_id_row = db(db.settings.setting_name == 'device_id').select().first()
+    device_id = device_id_row.setting_value if device_id_row is not None else None
 
-    # For edit option
+    # For new or edit option
     if request.vars.new or request.vars.edit:
-        form = SQLFORM.dictform(settings_dict)
+        form = SQLFORM.factory(Field('device_id'))
         edit_button = T("")
+        if device_id is not None:
+            form.vars.device_id = device_id
+
         if form.process().accepted:
-            settings_dict.update(form.vars)
-            slugiot_settings.set_device_id("device_id=%r"%(settings_dict['device_id']))
-            redirect(URL('default','index'))
+            db.settings.update_or_insert(db.settings.setting_name == 'device_id',
+                                         setting_name='device_id',
+                                         setting_value=form.vars.device_id)
+
+            redirect(URL('default', 'index'))
 
     # For view option
     else:
-        form = H2("Device ID: ",str(device_id))
-        edit_button = A("Edit", _href=URL('default', 'settings',vars={'edit':True}), _class = 'btn btn-primary')
+        form = H2("Device ID: ", str(device_id))
+        edit_button = A("Edit", _href=URL('default', 'settings', vars={'edit': True}), _class='btn btn-primary')
 
     return dict(form=form, edit_button=edit_button)
-
-@request.restful()
-def initialization():
-    """
-    This endpoint is used to manage the initialization of the client's
-    device_id.  Making a GET request should detail either what the
-    device_id is, or how to set it.  Making a POST request is how it
-    is actually set.
-
-    Currently, this does not actually call the server to set the value,
-    but that shouldn't be too difficult to manage.
-
-    tpesout: I don't know how to set up a web2py form.  Maybe someone
-    else can do that and use the functionality I added here to actually
-    do it?
-    """
-    if (server_url == None):
-        return "Please configure your server_url field in applications/private/appconfig.ini"
-
-    def GET(*args, **vars):
-        device_id = settings.get_device_id()
-        if (device_id == None):
-            return "Please POST to this url the desired identifier for your device with the 'device_id' parameter"
-        return "Your device_id is: " + device_id
-
-    def POST(*args, **vars):
-        if (vars == None or not vars.has_key('device_id')):
-            return "Please POST to this url the desired identifier for your device with the 'device_id' parameter"
-        device_id = vars['device_id']
-        settings.set_device_id(device_id)
-        return "Your device_id has been set to: " + device_id
-
-    return locals()
-
-
 
 
 def user():
@@ -126,4 +107,3 @@ def call():
     supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv
     """
     return service()
-
