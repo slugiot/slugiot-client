@@ -13,6 +13,8 @@ import slugiot_synchronization
 
 
 def log_message():
+    if not (request.env.HTTP_HOST.startswith('localhost') or request.env.HTTP_HOST.startswith('127.0.0.1')):
+        raise HTTP(403)
     log_message = "Sample Message: " + datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
     if ('log_message' in request.vars):
         log_message = request.vars.log_message
@@ -26,6 +28,8 @@ def log_message():
 
 
 def add_output():
+    if not (request.env.HTTP_HOST.startswith('localhost') or request.env.HTTP_HOST.startswith('127.0.0.1')):
+        raise HTTP(403)
     output_value = datetime.utcnow()
     if ('output_value' in request.vars):
         output_value = request.vars.output_value
@@ -39,6 +43,8 @@ def add_output():
 
 
 def set_value():
+    if not (request.env.HTTP_HOST.startswith('localhost') or request.env.HTTP_HOST.startswith('127.0.0.1')):
+        raise HTTP(403)
     key = "synchronization_example"
     if ('key' in request.vars):
         key = request.vars.key
