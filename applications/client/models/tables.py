@@ -20,13 +20,13 @@
 
 ## These tables are synched "up" from the clients to the server.
 
-from datetime import datetime
+import datetime
 
 ############### Procedure Harness Table ###############
 
 db.define_table('procedures',
                 Field('procedure_id', 'bigint', required=True),  # key
-                Field('last_update', 'datetime', default=datetime.utcnow(), required=True),
+                Field('last_update', 'datetime', default=datetime.datetime.utcnow(), required=True),
                 Field('name', 'string') # Name of procedure
                 )
 
@@ -38,12 +38,12 @@ db.define_table('settings',
                 Field('procedure_id'), # Can be Null for device-wide settings.
                 Field('setting_name'),
                 Field('setting_value'), # Encoded in json-plus.
-                Field('last_updated', 'datetime', default=datetime.utcnow(), update=datetime.utcnow())
+                Field('last_updated', 'datetime', default=datetime.datetime.utcnow(), update=datetime.datetime.utcnow())
                 )
 
 # Synched client -> server
 db.define_table('logs',
-                Field('time_stamp', 'datetime', default=datetime.utcnow()),
+                Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
                 Field('modulename'),
                 Field('log_level', 'integer'),  # int, 0 = most important.
                 Field('log_message', 'text')
@@ -51,7 +51,7 @@ db.define_table('logs',
 
 # Synched client -> server
 db.define_table('outputs',
-                Field('time_stamp', 'datetime', default=datetime.utcnow()),
+                Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
                 Field('modulename'),
                 Field('name'),  # Name of variable
                 Field('output_value', 'text'),  # Json, short please
@@ -61,7 +61,7 @@ db.define_table('outputs',
 # Synched client -> server
 # modulename + name is a key (only one row for combination).
 db.define_table('module_values',
-                Field('time_stamp', 'datetime', default=datetime.utcnow()),
+                Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
                 Field('modulename'),
                 Field('name'),  # Name of variable
                 Field('module_value', 'text'),  # Json, short please
@@ -69,6 +69,15 @@ db.define_table('module_values',
 
 db.define_table('synchronization_events',
                 Field('table_name'),
-                Field('time_stamp', 'datetime', default=datetime.utcnow()),
+                Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
+                )
+
+# State of the procedure when last run.
+# Note: when we synch this, we always have to keep at least one entry.
+db.define_table('procedure_state',
+                Field('procedure_id'),
+                Field('class_name'), # Name of the class that run in the procedure.
+                Field('procedure_state', 'text'),
+                Field('time_stamp', 'datetime', default=datetime.datetime.utcnow())
                 )
 
