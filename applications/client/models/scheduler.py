@@ -44,16 +44,25 @@ def run_procedure(module_name, class_name, function_args):
                               procedure_state=procedure_state_serialized)
     db.commit()
 
-def synchronize(function):
+def synchronize():
+    import slugiot_synchronization
+    logger.info("Start synch")
+    slugiot_synchronization.synch_all(slugiot_setup, ['logs', 'outputs', 'values'])
+    logger.info("Synch was successful")
+
+
+def proc_sync(function):
     import json_plus
     result = function()
-    logger.info("Returned from synchronization function call")
+    logger.info("Returned from procedure sync function call")
     logger.info(result)
 
 
 from gluon.scheduler import Scheduler
-current.slugiot_scheduler = Scheduler(db, dict(run_procedure=run_procedure,
-                                               do_synchronization=synchronize))
+current.slugiot_scheduler = Scheduler(db, dict(rerun_procedure=run_procedure,
+                                               do_synchronization=synchronize,
+                                               do_procedure_sync=proc_sync
+                                               ))
 
 
 
