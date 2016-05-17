@@ -1,13 +1,41 @@
 def start():
-    """Here we are acting as though the synchronizations have never yet been run.  An
-    improvement would be to first check if run previously and avoid the extra steps
-    of removing and adding back schedules again.
-    This function is called by the slugiot_startup.sh script which runs at device starup.
-    """
-    api = procedureapi.ProcedureApi("do_synchronization")
-    api.remove_schedule()
-    api.add_schedule()
+    """NB: procedureapi.add_schedule() could have been used to add sync schedules
+    by passing a dummy procedure name, but this is the only place where scheduling
+    of these functions occurs, and it seemed safer to create tasks directly.  Also,
+    since this is the only place at which the task is scheduled, it is safe to
+    simply delete and recreate tasks at each startup (the parameters don't change)"""
 
-    api = procedureapi.ProcedureApi("do_procedure_sync")
-    api.remove_schedule()
-    api.add_schedule()
+    from gluon import current
+    import datetime
+
+    start_time = datetime.datetime.now()
+
+    db(db.scheduler_task.task_name == 'do_procedure_sync').delete()
+    db(db.scheduler_task.task_name == 'do_synchronization').delete()
+
+    slugiot_scheduler.queue_task(
+        task_name='do_procedure_sync',
+        function='proc_sync',
+        start_time=start_time,
+        pvars={},
+        repeats=0,
+        period=60,
+        timeout=60,
+        retry_failed=1,
+        num_retries = 1
+    )
+    current.db.commit();
+
+
+    slugiot_scheduler.queue_task(
+        task_name='do_synchronization',
+        function='synchronize',
+        start_time=start_time,
+        pvars={},
+        repeats=0,
+        period=60,
+        timeout=60,
+        retry_failed=1,
+        num_retries=1
+    )
+    current.db.commit();
