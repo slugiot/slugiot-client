@@ -6,23 +6,22 @@ import time
 demo_time = 2
 
 
-
 class SeleniumTest(unittest.TestCase):
 
     # This is called before each test
     def setUp(self):
         self.driver = webdriver.Firefox()
 
-    # test log in page redirect to google
+    # test log in page redirect to Google
     def test_login(self):
         self.driver.get('https://www.crowdgrader.org') #load crowdgrade
         time.sleep(demo_time) #sleep for 2 seconds for demoing purpose, otherwise it is too fast
         login = self.driver.find_element_by_css_selector('.btn-login').click() # find in the log in button by css class and click on it
-        current_url = self.driver.current_url # get the current url
-        parsed_uri = urlparse( current_url) #parse the url
-        domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri) #get domain from the url
+        current_url = self.driver.current_url # get the current URL
+        parsed_uri = urlparse( current_url) #parse the URL
+        domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri) #get domain from the URL
         time.sleep(demo_time)
-        self.assertEqual('https://accounts.google.com/', domain) #assert that the domain is google.com
+        self.assertEqual('https://accounts.google.com/', domain) #assert that the domain is Google.com
         print('Login test passed: redirected to ' + domain)
 
     # This works the same as login
@@ -40,7 +39,7 @@ class SeleniumTest(unittest.TestCase):
     def test_follow_link_from_home_page(self):
         self.driver.get('https://www.crowdgrader.org')
         time.sleep(demo_time)
-        self.assertEqual('CrowdGrader: Peer Grading for Your Classroom', self.driver.title) #asser that the home page has title rowdGrader: Peer Grading for Your Classroom'
+        self.assertEqual('CrowdGrader: Peer Grading for Your Classroom', self.driver.title) #assert that the home page has title rowdGrader: Peer Grading for Your Classroom'
         print('Page title=' + self.driver.title)
         dropdown_links = self.driver.find_elements_by_class_name('dropdown-toggle') #the the dropdown menus by css class name
         dropdown_links[2].click() #click on the second dropdown menu
@@ -60,16 +59,16 @@ class SeleniumTest(unittest.TestCase):
         # wait to make sure the new window is loaded
         WebDriverWait(self.driver, 10).until(lambda d: d.title != "")
         
-        # Asssert that to correct url is loaded by clicking documentation, self.drive.current_url is the current_url
+        # Assert that to correct URL is loaded by clicking documentation, self.drive.current_url is the current_url
         # we check if it is http://doc.crowdgrader.org/crowdgrader-documentation
         self.assertEqual('http://doc.crowdgrader.org/crowdgrader-documentation', self.driver.current_url)
         print('Current url=' + self.driver.current_url)
 
-        # Find the Testimonial link (by its text) on the new page and lick on it
+        # Find the Testimonial link (by its text) on the new page and click on it
         self.driver.find_element_by_link_text('Testimonials').click()
         time.sleep(demo_time)
 
-        #Check if correct url is loaded, as above
+        #Check if correct URL is loaded, as above
         self.assertEqual('http://doc.crowdgrader.org/testimonials', self.driver.current_url)
         print('Current url:' + self.driver.current_url)
 
@@ -95,7 +94,7 @@ class SeleniumTest(unittest.TestCase):
 
         time.sleep(1)
 
-        # Make sure search button get the correct url
+        # Make sure search button get the correct URL
         self.assertEqual('http://doc.crowdgrader.org/system/app/pages/search?scope=search-site&q=test', self.driver.current_url)
         print('Current url:' + self.driver.current_url)
 
@@ -110,7 +109,6 @@ class SeleniumTest(unittest.TestCase):
     # This is called after each test
     def tearDown(self):
         self.driver.quit()
-
 
 if __name__ == '__main__':
     unittest.main()
