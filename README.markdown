@@ -12,5 +12,5 @@ The --recursive option is important, or else you will be missing PyDAL, the data
 
 ## Running the code
 
-    python web2py/web2py.py
-
+    cd ~/slugiot-client
+    sudo slugiot_install.sh

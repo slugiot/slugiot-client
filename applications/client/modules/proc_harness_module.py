@@ -1,18 +1,14 @@
-#########################################################################
-## Define API for interacting with procedure table
-## These methods will be used in the controller, called by the code
-## that actually performs the sync to interact with the tables
-#########################################################################
-
-import procedureapi as api
+import procedureapi
 import json
 from gluon import current
-import os
-
+import sys
 import requests
-db = current.db
-proc_table = db.procedures
-#settings_table = db.client_setting
+import logging
+import os
+from string import ascii_letters, digits
+import slugiot_settings as ss
+from gluon.contrib.appconfig import AppConfig
+
 
 def do_procedure_sync():
     """
@@ -22,50 +18,62 @@ def do_procedure_sync():
         Send list of procedure IDs that are needed from server
         Get updated data from server and save it to local database
     """
+    logger = logging.getLogger("web2py.app.client")
+    logger.setLevel(logging.INFO)
 
-    # Get device id from settings table - fix this based on Synch group code
-    device_id = "1" #db().select(settings_table.device_id).first().device_id
+    myconf = AppConfig(reload=True)
+    server_url = myconf.get('server.host')
 
-    # Get authorization from server for request???
-    #   Waiting for other team to implement this method
-    #   Not sure what to do here if anything
+    # Get device id from settings
+    device_id = "test" #ss.get_device_id()
 
     # Request dictionary {procedure_id: last_updated_date} from server
-    server_url = myconf.get('server.host')
     call_url = server_url + '/proc_harness/get_procedure_status/' + str(device_id)
-    r = requests.get(call_url)
-    server_status = r.json()
+    try:
+        r = requests.get(call_url)
+    except requests.exceptions.RequestException as e:
+        logger.ERROR(e)
+        sys.exit(1)
 
-    print "server_status", server_status
+    try:
+        server_status = r.json()
+    except:
+        server_status = {}
+    logger.debug("server_status: " + str(server_status))
 
     # Get corresponding dictionary from client procedure table
     client_status = get_procedure_status()
-
-    print "proc status", client_status
+    logger.debug("proc status: " + str(client_status))
 
     # Compare two dicts to get new procedures or procedures that have been updated
     synch_ids = compare_dates(server_status, client_status)
 
     if len(synch_ids) > 0:
-        print "synch ids", synch_ids
+        logger.debug("synch ids: " + str(synch_ids))
 
         # Request full procedure data for new and updated procedures from server
         call_url_data = server_url + '/proc_harness/get_procedure_data/'
         call_url_names = server_url + '/proc_harness/get_procedure_names/'
-        r = requests.get(call_url_data, params=json.dumps(synch_ids))
+        try:
+            r = requests.get(call_url_data, params=json.dumps(synch_ids))
+        except requests.exceptions.RequestException as e:
+            logger.ERROR(e)
+            sys.exit(1)
 
         synch_data = r.json()
-        print "synch data", synch_data
+        logger.debug("synch data: " + str(synch_data))
 
-        r = requests.get(call_url_names, params=json.dumps(synch_ids))
+        try:
+            r = requests.get(call_url_names, params=json.dumps(synch_ids))
+        except requests.exceptions.RequestException as e:
+            logger.ERROR(e)
+            sys.exit(1)
+
         synch_names = r.json()
-        print "synch names", synch_names
+        logger.debug("synch names: " + str(synch_names))
 
         # Update local data
         insert_new_procedure(synch_data, synch_names, server_status)
-        return "Status: Procedure Synch Complete"
-
-    return "Status: No Procedure Synch Needed"
 
 def get_procedure_status():
     """
@@ -76,16 +84,13 @@ def get_procedure_status():
     :rtype:
     """
 
-    # Get all procedure_ids for the device_id
-    procedure_ids = db().select(proc_table.procedure_id)
+    db = current.db
+    proc_table = db.procedures
 
-    # Build dictionary containing last_update_stable date for each procedure_id
-    procedure_info = {}
-    for proc in procedure_ids:
-        pid = proc.procedure_id
-        procedure_info[pid] = db(proc_table.procedure_id == pid).select(proc_table.last_update).first().last_update
+    if not db(proc_table).isempty():
+        return {p.procedure_id: p.last_update for p in db(proc_table).select()}
 
-    return procedure_info
+    return {}
 
 
 def insert_new_procedure(procedure_data, procedure_names, server_status):
@@ -101,24 +106,42 @@ def insert_new_procedure(procedure_data, procedure_names, server_status):
     :type server_status:
     """
 
-    print "INSIDE INSERT FUNCTION: "
+    db = current.db
+    proc_table = db.procedures
+
+    logger = logging.getLogger("web2py.app.client")
+    logger.setLevel(logging.INFO)
+
+    logger.debug("INSIDE INSERT FUNCTION")
 
     for proc, name in procedure_names.iteritems():
         data = procedure_data[proc]
 
-        print proc, name, data, server_status[proc]
+        logger.debug(str(proc) + " " + str(name) + " " + str(data) + " " + str(server_status[proc]))
 
-        # Storing procedure data as a file to avoid issues with exec
-        file_name = "applications/client/modules/" + str(name) + ".py"
+        proc_directory = "applications/client/modules/procedures"
+        init_file_name = proc_directory + "/" + "__init__.py"
+
+        # Create procedure directory if it does not exist
+        if not os.path.exists(proc_directory):
+            os.makedirs(proc_directory)
+            with open(init_file_name, "a"):
+                os.utime(init_file_name, None)
+
+        # Storing procedure data as a file
+        file_name = proc_directory + "/" + name_valid
+        if file_name.find(".py") == -1:
+            file_name = file_name + ".py"
         with open(file_name, "wb") as procedure_file:
             procedure_file.write(data)
 
         # When procedures get updated old schedules should be removed so new schedules can be scheduled
-        #api_obj = api.ProcedureApi(name)
-        #api_obj.remove_all_schedules()
-        #api_obj.add_schedule("run", repeats=1)
+        api = procedureapi.ProcedureApi(name_valid)
+        api.remove_schedule()
+        api.add_schedule()
 
-        proc_table.update_or_insert(procedure_id = proc,
+        proc_table.update_or_insert(proc_table.procedure_id == proc,
+                                    procedure_id = proc,
                                     last_update = server_status[proc],
                                     name = name)
 
