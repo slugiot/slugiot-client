@@ -12,7 +12,7 @@ def run_procedure(module_name, class_name, function_args):
     def log_both(msg):
         logger.info(msg)
         api.log_info(msg)
-    proc_name = str(module_name)
+    proc_name = "procedures." + str(module_name)
     proc = __import__(proc_name)
     logger.info(proc_name)
     logger.info(proc)

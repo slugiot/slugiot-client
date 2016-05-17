@@ -29,10 +29,11 @@ def do_procedure_sync():
 
     # Request dictionary {procedure_id: last_updated_date} from server
     call_url = server_url + '/proc_harness/get_procedure_status/' + str(device_id)
+    logger.info("call url: " + call_url)
     try:
         r = requests.get(call_url)
     except requests.exceptions.RequestException as e:
-        logger.ERROR(e)
+        logger.info(str(e))
         sys.exit(1)
 
     try:
@@ -57,7 +58,7 @@ def do_procedure_sync():
         try:
             r = requests.get(call_url_data, params=json.dumps(synch_ids))
         except requests.exceptions.RequestException as e:
-            logger.ERROR(e)
+            logger.info(str(e))
             sys.exit(1)
 
         synch_data = r.json()
@@ -66,7 +67,7 @@ def do_procedure_sync():
         try:
             r = requests.get(call_url_names, params=json.dumps(synch_ids))
         except requests.exceptions.RequestException as e:
-            logger.ERROR(e)
+            logger.info(str(e))
             sys.exit(1)
 
         synch_names = r.json()
