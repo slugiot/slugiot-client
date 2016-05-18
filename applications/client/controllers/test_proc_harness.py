@@ -33,7 +33,7 @@ def clear_tables():
     try:
         r = requests.get(call_url)
     except requests.exceptions.RequestException as e:
-        logger.error(str(e))
+        logger.info(str(e))
         sys.exit(1)
 
     proc_table.truncate()
