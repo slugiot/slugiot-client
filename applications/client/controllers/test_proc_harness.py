@@ -24,13 +24,16 @@ def view_table():
     for row in db(proc_table).select():
         logger.debug(row)
 
+def do_synch():
+    phm.do_procedure_sync()
+
 def clear_tables():
     call_url = server_url + '/proc_harness_test/clear_tables'
 
     try:
         r = requests.get(call_url)
     except requests.exceptions.RequestException as e:
-        logger.error(e)
+        logger.info(str(e))
         sys.exit(1)
 
     proc_table.truncate()

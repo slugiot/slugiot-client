@@ -29,10 +29,11 @@ def do_procedure_sync():
 
     # Request dictionary {procedure_id: last_updated_date} from server
     call_url = server_url + '/proc_harness/get_procedure_status/' + str(device_id)
+    logger.info("call url: " + call_url)
     try:
         r = requests.get(call_url)
     except requests.exceptions.RequestException as e:
-        logger.ERROR(e)
+        logger.info(str(e))
         sys.exit(1)
 
     try:
@@ -57,7 +58,7 @@ def do_procedure_sync():
         try:
             r = requests.get(call_url_data, params=json.dumps(synch_ids))
         except requests.exceptions.RequestException as e:
-            logger.ERROR(e)
+            logger.info(str(e))
             sys.exit(1)
 
         synch_data = r.json()
@@ -66,7 +67,7 @@ def do_procedure_sync():
         try:
             r = requests.get(call_url_names, params=json.dumps(synch_ids))
         except requests.exceptions.RequestException as e:
-            logger.ERROR(e)
+            logger.info(str(e))
             sys.exit(1)
 
         synch_names = r.json()
@@ -129,14 +130,14 @@ def insert_new_procedure(procedure_data, procedure_names, server_status):
                 os.utime(init_file_name, None)
 
         # Storing procedure data as a file
-        file_name = proc_directory + "/" + name_valid
+        file_name = proc_directory + "/" + str(name)
         if file_name.find(".py") == -1:
             file_name = file_name + ".py"
         with open(file_name, "wb") as procedure_file:
             procedure_file.write(data)
 
         # When procedures get updated old schedules should be removed so new schedules can be scheduled
-        api = procedureapi.ProcedureApi(name_valid)
+        api = procedureapi.ProcedureApi(str(name))
         api.remove_schedule()
         api.add_schedule()
 
