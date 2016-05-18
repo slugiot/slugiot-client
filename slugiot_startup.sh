@@ -1,5 +1,7 @@
 #!usr/bin/env bash
 
+# TODO - start webserver as daemon like luca's RPi bootcamp script
+
 SERVER=example.com
 PORT=8080
 PASS=password
@@ -19,7 +21,7 @@ nc -z $myip $PORT; wup=$?;
 if [$wup -ne 0]; then
   echo "Connection to $myip on port $PORT failed"
   exit 1
-else
+else    # TODO - need to handle http response code here
   echo "Connection to $myip on port $PORT succeeded.  Call to _start()."
   curl http://$myip:$PORT/startup/_start.html
   exit 0

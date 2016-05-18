@@ -10,7 +10,7 @@ Clone this repository via:
 
 The --recursive option is important, or else you will be missing PyDAL, the database abstraction layer. 
 
-## Running the code
+## Running the code on client
 
 The script slugiot_install.sh enters the startup script into the server initialization.
 
