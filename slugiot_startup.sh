@@ -23,6 +23,6 @@ if [$wup -ne 0]; then
   exit 1
 else    # TODO - need to handle http response code here
   echo "Connection to $myip on port $PORT succeeded.  Call to _start()."
-  curl http://$myip:$PORT/startup/_start.html
+  curl --ipv4 http://$myip:$PORT/startup/_start.html
   exit 0
 fi

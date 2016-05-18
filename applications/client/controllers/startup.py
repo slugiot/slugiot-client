@@ -8,9 +8,10 @@ def _start():
     since this is the only place at which the task is scheduled, it is safe to
     simply delete and recreate tasks at each startup (the parameters don't change)"""
 
-    if not (request.env.HTTP_HOST.startswith('localhost') |
-                request.env.HTTP_HOST.startswith('127')):
-        raise (HTTP(403))
+    # TODO - change this code to a check against external calls.  Also check on the underscore
+    #if not (request.env.HTTP_HOST.startswith('localhost') |
+    #            request.env.HTTP_HOST.startswith('127')):
+    #    raise (HTTP(403))
 
 
     start_time = datetime.datetime.now()
