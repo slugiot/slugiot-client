@@ -2,7 +2,7 @@
 
 # TODO: Later will add variables for port number, application, and password.
 
-# Fetch internal network ip into variable
+# Fetch internal network ip into variable (more reliable than using just 'hostname -I')
 myip=
 while IFS=$': \t' read -a line ;do
     [ -z "${line%inet}" ] && ip=${line[${#line[1]}>4?1:2]} &&

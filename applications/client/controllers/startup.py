@@ -13,7 +13,7 @@ def start():
     db(db.scheduler_task.task_name == 'do_procedure_sync').delete()
     db(db.scheduler_task.task_name == 'do_synchronization').delete()
 
-    slugiot_scheduler.queue_task(
+    current.slugiot_scheduler.queue_task(
         task_name='do_procedure_sync',
         function='proc_sync',
         start_time=start_time,
@@ -27,7 +27,7 @@ def start():
     current.db.commit();
 
 
-    slugiot_scheduler.queue_task(
+    current.slugiot_scheduler.queue_task(
         task_name='do_synchronization',
         function='synchronize',
         start_time=start_time,

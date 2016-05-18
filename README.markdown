@@ -12,5 +12,9 @@ The --recursive option is important, or else you will be missing PyDAL, the data
 
 ## Running the code
 
-    cd ~/slugiot-client
-    sudo slugiot_install.sh
+Must have webserver installed and listening on your chosen port:
+
+    sudo apt-get install apache2 -y
+
+
+    sudo ./slugiot-client/slugiot_install.sh
