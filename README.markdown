@@ -12,9 +12,8 @@ The --recursive option is important, or else you will be missing PyDAL, the data
 
 ## Running the code
 
-Must have webserver installed and listening on your chosen port:
-
-    sudo apt-get install apache2 -y
-
+Enters startup script into the server initialization:
 
     sudo ./slugiot-client/slugiot_install.sh
+    
+The startup script safely starts the webserver and queues the sync tasks in scheduler.

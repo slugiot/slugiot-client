@@ -9,7 +9,7 @@ def _start():
     simply delete and recreate tasks at each startup (the parameters don't change)"""
 
     if not (request.env.HTTP_HOST.startswith('localhost') |
-                request.env.HTTP_HOST.startswith('localhost', '127')):
+                request.env.HTTP_HOST.startswith('127')):
         raise (HTTP(403))
 
 
