@@ -12,8 +12,10 @@ The --recursive option is important, or else you will be missing PyDAL, the data
 
 ## Running the code
 
-Enters startup script into the server initialization:
+The script slugiot_install.sh enters the startup script into the server initialization.
 
-    sudo ./slugiot-client/slugiot_install.sh
+    # cd into top level of project and execute these two lines:
+    sudo chmod +x slugiot_install.sh
+    . slugiot_install.sh
     
 The startup script safely starts the webserver and queues the sync tasks in scheduler.
