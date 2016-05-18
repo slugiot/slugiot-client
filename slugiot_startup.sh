@@ -1,6 +1,8 @@
 #!usr/bin/env bash
 
-# TODO: Later will add variables for port number, application, and password.
+SERVER=example.com
+PORT=8080
+PASS=password
 
 # Fetch internal network ip into variable (more reliable than using just 'hostname -I')
 myip=
@@ -10,10 +12,15 @@ while IFS=$': \t' read -a line ;do
   done< <(LANG=C /sbin/ifconfig)
 
 # start web2py with start scheduler command option
-python web2py.py -a password -i $myip -p 8080 -K client -X
+python web2py.py -a $PASS -i $myip -p $PORT -K client -X
 
-# TODO: ping port to check webserver running; use awk to see if response (pid), then can start()
-# netstat -anp | grep 8080
-
-# Run startup script
-curl http://$myip:8080/startup/start.html
+# Check if webserver up and running and, if so, run startup script
+nc -z $myip $PORT; wup=$?;
+if [$wup -ne 0]; then
+  echo "Connection to $myip on port $PORT failed"
+  exit 1
+else
+  echo "Connection to $myip on port $PORT succeeded.  Call to _start()."
+  curl http://$myip:$PORT/startup/_start.html
+  exit 0
+fi

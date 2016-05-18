@@ -1,12 +1,17 @@
-def start():
+from gluon import current
+import datetime
+
+def _start():
     """NB: procedureapi.add_schedule() could have been used to add sync schedules
     by passing a dummy procedure name, but this is the only place where scheduling
     of these functions occurs, and it seemed safer to create tasks directly.  Also,
     since this is the only place at which the task is scheduled, it is safe to
     simply delete and recreate tasks at each startup (the parameters don't change)"""
 
-    from gluon import current
-    import datetime
+    if not (request.env.HTTP_HOST.startswith('localhost') |
+                request.env.HTTP_HOST.startswith('localhost', '127')):
+        raise (HTTP(403))
+
 
     start_time = datetime.datetime.now()
 
