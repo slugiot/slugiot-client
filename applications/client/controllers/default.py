@@ -9,17 +9,66 @@
 #########################################################################
 import slugiot_settings
 
+
+def _device_id_exists():
+    """
+    Check for device ID being present.
+    It makes two checks:
+        1. Whether there's a setting called device_id or not
+        2. Whether the setting device_id has any value or not
+    :return:
+    :rtype:
+    """
+    device_id_row = db(db.settings.setting_name == 'device_id').select().first()
+    device_id = device_id_row.setting_value if device_id_row is not None else None
+    return True if device_id is not None else False
+
+
 def index():
     """
-    example action using the internationalization operator T and flash
-    rendered by views/default/index.html or views/generic.html
+    Index page for the client.
 
-    if you need a simple wiki simply replace the two lines below with:
-    return auth.wiki()
+    Shows option to set/view a device ID based on whether the ID exists or not
     """
-    response.flash = T("Hello World")
-    return dict(message=T('Welcome to web2py!'))
+    # Check if settings exist already
+    if not _device_id_exists():
+        message = T('Welcome to SlugIOT Client. Please register device')
+        settings = A("Click here to initialize your device", _href=URL('default', 'settings', vars={'new': True}),
+                     _class='btn btn-primary')
+    else:
+        message = T('This device is registered')
+        settings = A("Click here to see/edit device settings", _href=URL('default', 'settings'),
+                     _class='btn btn-success')
+    return dict(message=message, settings=settings)
 
+
+def settings():
+    """
+    Settings page for the device to set device ID.
+    """
+    device_id_row = db(db.settings.setting_name == 'device_id').select().first()
+    device_id = device_id_row.setting_value if device_id_row is not None else None
+
+    # For new or edit option
+    if request.vars.new or request.vars.edit:
+        form = SQLFORM.factory(Field('device_id'))
+        edit_button = T("")
+        if device_id is not None:
+            form.vars.device_id = device_id
+
+        if form.process().accepted:
+            db.settings.update_or_insert(db.settings.setting_name == 'device_id',
+                                         setting_name='device_id',
+                                         setting_value=form.vars.device_id)
+
+            redirect(URL('default', 'index'))
+
+    # For view option
+    else:
+        form = H2("Device ID: ", str(device_id))
+        edit_button = A("Edit", _href=URL('default', 'settings', vars={'edit': True}), _class='btn btn-primary')
+
+    return dict(form=form, edit_button=edit_button)
 
 @request.restful()
 def initialization():
