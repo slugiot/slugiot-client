@@ -44,7 +44,7 @@ db.define_table('settings',
 # Synched client -> server
 db.define_table('logs',
                 Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
-                Field('modulename'),
+                Field('procedure_id'),
                 Field('log_level', 'integer'),  # int, 0 = most important.
                 Field('log_message', 'text')
                 )
@@ -52,7 +52,7 @@ db.define_table('logs',
 # Synched client -> server
 db.define_table('outputs',
                 Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
-                Field('modulename'),
+                Field('procedure_id'),
                 Field('name'),  # Name of variable
                 Field('output_value', 'text'),  # Json, short please
                 Field('tag')
@@ -62,7 +62,7 @@ db.define_table('outputs',
 # modulename + name is a key (only one row for combination).
 db.define_table('module_values',
                 Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
-                Field('modulename'),
+                Field('procedure_id'),
                 Field('name'),  # Name of variable
                 Field('module_value', 'text'),  # Json, short please
                 )
@@ -80,4 +80,18 @@ db.define_table('procedure_state',
                 Field('procedure_state', 'text'),
                 Field('time_stamp', 'datetime', default=datetime.datetime.utcnow())
                 )
+
+# initialize settings manager
+import slugiot_settings
+settings = slugiot_settings.SlugIOTSettings()
+
+# Let's initialize the setup.
+import slugiot_setup
+slugiot_setup = slugiot_setup.SlugIOTSetup()
+slugiot_setup.db = db
+slugiot_setup.server_url = server_url
+slugiot_setup.settings = settings
+slugiot_setup.device_id = settings.get_device_id()
+
+
 

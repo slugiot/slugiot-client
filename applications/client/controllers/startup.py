@@ -45,3 +45,10 @@ def _start():
         num_retries=1
     )
     current.db.commit();
+
+
+
+def clear_all_tasks():
+    """Here we clear all tasks"""
+    current.db(db.scheduler_task).delete()
+    current.db.commit()
