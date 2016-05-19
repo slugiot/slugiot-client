@@ -12,22 +12,8 @@ class Procedure(json_plus.Serializable):
     def __init__(self):
         self.api = None
 
-    def __init__(self, procedure_name):
-        self.procedure_name = procedure_name
-
-    def write_value(self, dictionary):
-        """ Writes key value pairs into the values table
-        param dictionary: Takes dictionary of key/value pairs as input
-        """
-        db = current.db
-        for key,val in dictionary.iteritems():
-            # Update the key value for this module if it already exists
-            db.module_values.update_or_insert((db.module_values.name == key) & (db.module_values.procedure_id == self.procedure_name),
-                                              time_stamp=datetime.datetime.utcnow(),
-                                              procedure_id=self.procedure_name,
-                                              name=key,
-                                              module_value=json_plus.Serializable.dumps(val))
-        db.commit()
+    # Can be over-ridden in subclasses.
+    def init(self): pass
 
     @staticmethod
     def create(module_name):
