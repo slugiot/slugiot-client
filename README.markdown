@@ -2,10 +2,10 @@
 
 SlugIOT is a remote device management system for small embedded linux systems.
 
-This is the version of code that runs on the client.
-
-Clone this repository via: 
-
+This is the version of code that runs on the client.  Install in Documents,
+when logged in as user pi.
+    
+    cd ~/Documents
     git clone --recursive https://github.com/slugiot/slugiot-client.git
 
 The --recursive option is important, or else you will be missing PyDAL, the database abstraction layer. 
