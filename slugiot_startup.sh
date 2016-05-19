@@ -44,10 +44,12 @@ if [$wup -ne 0]; then
   echo "Connection to $pyip on port $PORT failed"
   exit 1
 else
-  echo "Connection to client succeeded.  "
+  echo "Connection to client succeeded."
   echo "Access client on internal network using http://$pyip:$PORT/"
   echo "Begin call to _start() from localhost..."
-  # TODO - need to handle http response code here.  Presently call is rejected.
-  curl --ipv4 http://127.0.0.1:$PORT/startup/_start.html
-  exit 0
+  httpUrl="http://127.0.0.1:$PORT/startup/_start.html"
+  rep=$(curl --ipv4 -o /dev/null --silent --head --write-out '%{http_code}\n' $httpUrl)
+  status=$?
+  echo "$rep"
+  exit $status
 fi
