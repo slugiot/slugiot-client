@@ -1,19 +1,55 @@
 #!usr/bin/env bash
+### BEGIN INIT INFO
+# Provides:          web2py
+# Required-Start:    $local_fs ram_fs
+# Required-Stop:
+# Default-Start:     S
+# Default-Stop:         0 6
+# Short-Description: Starts local web2py server, with scheduler running in background for APP.
+### END INIT INFO
 
-# TODO: Later will add variables for port number, application, and password.
+PATH="/sbin:/bin:/usr/bin"
+PID_FILE=/var/run/web2py.pid
+USER=pi
+APPDIR=/home/pi/Documents
+CMD=$APPDIR/slugiot-client/web2py.py
+PYTHON=/usr/bin/python
+PORT=8080
+PASS=password
+APP=client
 
-# Fetch internal network ip into variable
-myip=
+. /lib/lsb/init-functions
+
+do_start () {
+    /sbin/start-stop-daemon --start --chuid $USER -d $APPDIR --background -v --user $USER --pidfile $PID_FILE --make-pidfile --exec $PYTHON --startas $PYTHON -- $CMD -a $PASS -p $PORT -K $APP -i 0.0.0.0 -X
+    log_success_msg "Started web2py"
+}
+do_stop () {
+    /sbin/start-stop-daemon --stop -d $APPDIR -v --user $USER --pidfile $PID_FILE --exec $PYTHON --retry 10
+    rm $PID_FILE
+    log_success_msg "Stopped web2py"
+}
+
+# Fetch internal network ip into variable (more reliable than using just 'hostname -I')
+pyip=
 while IFS=$': \t' read -a line ;do
     [ -z "${line%inet}" ] && ip=${line[${#line[1]}>4?1:2]} &&
-        [ "${ip#127.0.0.1}" ] && myip=$ip
+        [ "${ip#127.0.0.1}" ] && pyip=$ip
   done< <(LANG=C /sbin/ifconfig)
 
-# start web2py with start scheduler command option
-python web2py.py -a password -i $myip -p 8080 -K client -X
-
-# TODO: ping port to check webserver running; use awk to see if response (pid), then can start()
-# netstat -anp | grep 8080
-
-# Run startup script
-curl http://$myip:8080/startup/start.html
+# Check if webserver up and running and, if so, open web browser to client and
+# run startup script from localhost.
+nc -z $pyip $PORT; wup=$?;
+if [$wup -ne 0]; then
+  echo "Connection to $pyip on port $PORT failed"
+  exit 1
+else
+  echo "Connection to client succeeded."
+  echo "Access client on internal network using http://$pyip:$PORT/"
+  echo "Begin call to _start() from localhost..."
+  httpUrl="http://127.0.0.1:$PORT/startup/_start.html"
+  rep=$(curl --ipv4 -o /dev/null --silent --head --write-out '%{http_code}\n' $httpUrl)
+  status=$?
+  echo "$rep"
+  exit $status
+fi

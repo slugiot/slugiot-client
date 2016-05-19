@@ -4,8 +4,8 @@
 # installed (at top level) on device along with Linux operating system
 # Run with sudo
 
-cp slugiot_startup.sh ~/etc/init.d
+sudo cp slugiot_startup.sh /etc/init.d
 
-chmod +x /etc/init.d/slugiot_startup.sh
+sudo chmod +x /etc/init.d/slugiot_startup.sh
 
-/etc/init.d/slugiot_startup.sh
+. /etc/init.d/slugiot_startup.sh
