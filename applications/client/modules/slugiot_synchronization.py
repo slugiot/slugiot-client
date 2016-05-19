@@ -1,5 +1,4 @@
 import json_plus
-import json
 import urllib
 from slugiot_setup import  LogLevel
 import traceback
@@ -7,6 +6,7 @@ import threading
 from datetime import datetime;
 import requests
 from dateutil.parser import parse as parse_date
+import proc_harness_module
 
 sync_lock = threading.Lock()
 
@@ -105,8 +105,13 @@ def save_settings(setup_info, setting_data):
 
     try:
         # we use setup_info.settings (from SlugIOTSettings object)
+        procedures = []
         for setting in setting_data:
-            settings.set_setting_value(setting['setting_name'], setting['setting_value'], setting['procedure_id'])
+            procedure = setting['procedure_id']
+            if not procedure in procedures:
+                procedures.append(procedure)
+
+            settings.set_setting_value(setting['setting_name'], setting['setting_value'], procedure)
             # getting last updated time
             last_updated = setting['last_updated']
             last_updated_datetime = last_updated
@@ -117,6 +122,8 @@ def save_settings(setup_info, setting_data):
                 synchronize_time = last_updated_datetime
 
         set_last_synchronized(db, 'settings', synchronize_time)
+        if (len(procedures > 0)):
+            proc_harness_module.enqueue_procedure_task(procedures)
 
         return True
     except Exception, _:

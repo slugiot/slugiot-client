@@ -168,3 +168,15 @@ def compare_dates(server_dict, client_dict):
                 synch_ids.append(proc)
 
     return synch_ids
+
+def enqueue_procedure_task(procedure):
+    procedures = []
+    if isinstance(procedure, list):
+        procedures = procedure
+    else:
+        procedures.append(procedure)
+
+    for proc in procedures:
+        api = procedureapi.ProcedureApi(proc)
+        api.add_schedule()
+
