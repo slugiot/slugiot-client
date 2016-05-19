@@ -13,32 +13,30 @@ def start():
     db(db.scheduler_task.task_name == 'do_procedure_sync').delete()
     db(db.scheduler_task.task_name == 'do_synchronization').delete()
 
-    slugiot_scheduler.queue_task(
+    current.slugiot_scheduler.queue_task(
         task_name='do_procedure_sync',
-        function='proc_sync',
+        function='do_procedure_sync',
         start_time=start_time,
         pvars={},
-        repeats=0,
+        repeats=1,  # If repeats=0 (unlimited), it would constantly fail.
         period=60,
         timeout=60,
-        retry_failed=1,
-        num_retries = 1
+        retry_failed=1
     )
-    current.db.commit();
+    current.db.commit()
 
 
-    slugiot_scheduler.queue_task(
+    current.slugiot_scheduler.queue_task(
         task_name='do_synchronization',
-        function='synchronize',
+        function='do_synchronization',
         start_time=start_time,
         pvars={},
-        repeats=0,
-        period=60,
+        repeats=1,  # If repeats=0 (unlimited), it would constantly fail.
+        period=600,
         timeout=60,
-        retry_failed=1,
-        num_retries=1
+        retry_failed=5
     )
-    current.db.commit();
+    current.db.commit()
 
 
 

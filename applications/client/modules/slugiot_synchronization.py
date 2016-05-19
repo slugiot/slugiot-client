@@ -11,7 +11,7 @@ from dateutil.parser import parse as parse_date
 sync_lock = threading.Lock()
 
 
-def synch_all_c2s(setup_info, tables=["logs", "outputs", "values"]):
+def synch_all_c2s(setup_info, tables=["logs", "outputs", "module_values"]):
     return all([synchronize_c2s(setup_info, t) for t in tables])
 
 def synchronize_c2s(setup_info, table_name):
