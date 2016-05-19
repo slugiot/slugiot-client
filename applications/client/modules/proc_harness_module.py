@@ -169,6 +169,7 @@ def compare_dates(server_dict, client_dict):
 
     return synch_ids
 
+
 def enqueue_procedure_task(procedure):
     procedures = []
     if isinstance(procedure, list):

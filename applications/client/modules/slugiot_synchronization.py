@@ -122,7 +122,7 @@ def save_settings(setup_info, setting_data):
                 synchronize_time = last_updated_datetime
 
         set_last_synchronized(db, 'settings', synchronize_time)
-        if (len(procedures > 0)):
+        if (len(procedures) > 0):
             proc_harness_module.enqueue_procedure_task(procedures)
 
         return True
