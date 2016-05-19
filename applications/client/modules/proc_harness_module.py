@@ -141,10 +141,14 @@ def insert_new_procedure(procedure_data, procedure_names, server_status):
         api.remove_schedule()
         api.add_schedule()
 
+        logger.info("new schedule should be in place")
+
         proc_table.update_or_insert(proc_table.procedure_id == proc,
                                     procedure_id = proc,
                                     last_update = server_status[proc],
                                     name = name)
+
+        logger.info("procedure table should be updated")
 
 def compare_dates(server_dict, client_dict):
     """
