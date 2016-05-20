@@ -8,14 +8,15 @@ def _startup():
     since this is the only place at which the task is scheduled, it is safe to
     simply delete and recreate tasks at each startup (the parameters don't change)"""
 
-    # TODO - change this code to a check against external calls.  Also check on the underscore
-    #if not (request.env.HTTP_HOST.startswith('localhost') |
-    #            request.env.HTTP_HOST.startswith('127')):
-    #    raise (HTTP(403))
+    # TODO - test this code to a check against external calls.  Also check on the underscore
+    if not (request.env.HTTP_HOST.startswith('localhost') |
+                request.env.HTTP_HOST.startswith('127')):
+        raise (HTTP(403))
 
 
     start_time = datetime.datetime.now()
 
+    # TODO - change database to one specific to scheuler (as per recommendation in web2py docs)
     db(db.scheduler_task.task_name == 'do_procedure_sync').delete()
     db(db.scheduler_task.task_name == 'do_synchronization').delete()
 

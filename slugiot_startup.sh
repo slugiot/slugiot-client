@@ -20,10 +20,11 @@ APP=client
 
 . /lib/lsb/init-functions
 
+# TODO - Remove -e flag when done testing.  Better: allow to run this script with debug option.
 do_start () {
     /sbin/start-stop-daemon --start --chuid $USER -d $APPDIR --background -v \
         --user $USER --pidfile $PID_FILE --make-pidfile --exec $PYTHON \
-        --startas $PYTHON -- $CMD -a $PASS -p $PORT -K $APP -i 0.0.0.0 -X
+        --startas $PYTHON -- $CMD -e -a $PASS -p $PORT -K $APP -i 0.0.0.0 -X
     log_success_msg "Started web2py!"
 }
 
@@ -54,11 +55,12 @@ do_startup(){
       rep=$(curl -o /dev/null --silent --head --write-out '%{http_code}\n' $httpUrl)
       status=$?
       if [ $status -ne 0 && $rep -ne 200 ]; then
-        log_warning_msg "Failed to startup $APP completely; http_status = $status.  Check it!!!"
+        log_warning_msg "Failed to startup $APP completely; http_status = $rep.  Check it!!!"
       else
-        log_success_msg "Completed startup of $APP."
+        # TODO - Final checks per _startup() controller.  E.g., sqlite3 util check scheduler created.
+        log_success_msg "Completed startup of $APP with http_status = $rep "
       fi
-      log_success_msg "Access admin area using https://$pyip:$PORT/admin/"
+      log_success_msg "Access admin area using http://$pyip:$PORT/ "
     fi
 }
 
@@ -66,13 +68,13 @@ do_startup(){
 case "$1" in
   start)
         do_start
-        sleep 5
+        sleep 15
         do_startup
         ;;
   restart|reload|force-reload)
         do_stop || log_failure_msg "Not running"
         do_start
-        sleep 5
+        sleep 15
         do_startup
         ;;
   stop|status)
