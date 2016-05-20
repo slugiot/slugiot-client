@@ -121,7 +121,7 @@ def insert_new_procedure(procedure_data, procedure_names, server_status):
         logger.debug(str(proc) + " " + str(name) + " " + str(data) + " " + str(server_status[proc]))
 
         proc_directory = "applications/client/modules/procedures"
-        init_file_name = proc_directory + "/" + "__init__.py"
+        init_file_name = os.path.join(proc_directory, "__init__.py")
 
         # Create procedure directory if it does not exist
         if not os.path.exists(proc_directory):
@@ -130,14 +130,14 @@ def insert_new_procedure(procedure_data, procedure_names, server_status):
                 os.utime(init_file_name, None)
 
         # Storing procedure data as a file
-        file_name = proc_directory + "/" + str(name)
+        file_name = os.path.join(proc_directory, name)
         if file_name.find(".py") == -1:
             file_name = file_name + ".py"
         with open(file_name, "wb") as procedure_file:
             procedure_file.write(data)
 
         # When procedures get updated old schedules should be removed so new schedules can be scheduled
-        api = procedureapi.ProcedureApi(str(name))
+        api = procedureapi.ProcedureApi(name)
         api.remove_schedule()
         api.add_schedule()
 

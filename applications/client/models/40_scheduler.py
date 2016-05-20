@@ -1,21 +1,19 @@
 # Web2py Scheduler
-
+# Here we define what functions we may want to schedule, and then create the scheduler
+# DO NOT enqueue tasks here!  This is run on every page request, so we want to have
+# the enqueuing of things happen somewhere else.
 import json_plus
 from procedureapi import ProcedureApi
-
-# Note: remember to schedule a procedure to run whenever it is downloaded
-# to the device.
 
 def run_procedure(module_name, class_name, function_args):
     # Builds the API.
     api = ProcedureApi(module_name)
     def log_both(msg):
-        logger.info(msg)
         api.log_info(msg)
-    proc_name = "procedures." + str(module_name)
-    proc = __import__(proc_name)
-    logger.info(proc_name)
-    logger.info(proc)
+
+    proc_name = "procedures." + module_name
+    proc = __import__(proc_name, fromlist=[''])
+
     log_both("Calling procedure %s with arguments %r" % (module_name, function_args))
     # Gets the previous run, if any.
     previous_run = db((db.procedure_state.procedure_id == module_name) &
@@ -44,25 +42,27 @@ def run_procedure(module_name, class_name, function_args):
                               procedure_state=procedure_state_serialized)
     db.commit()
 
-def synchronize():
+
+def scheduled_synchronize():
     import slugiot_synchronization
-    logger.info("Start synch")
-    slugiot_synchronization.synch_all(slugiot_setup, ['logs', 'outputs', 'values'])
-    logger.info("Synch was successful")
+    slugiot_synchronization.synch_all_c2s(slugiot_setup)
+    slugiot_synchronization.synchronize_settings(slugiot_setup)
 
 
 def proc_sync(function):
     import json_plus
     result = function()
-    logger.info("Returned from procedure sync function call")
-    logger.info(result)
 
 
 from gluon.scheduler import Scheduler
-current.slugiot_scheduler = Scheduler(db, dict(rerun_procedure=run_procedure,
-                                               do_synchronization=synchronize,
+current.slugiot_scheduler = Scheduler(db, dict(run_procedure=run_procedure,
+                                               do_synchronization=scheduled_synchronize,
                                                do_procedure_sync=proc_sync
                                                ))
+
+# For running the server with the scheduler:
+# --with-scheduler --scheduler=client
+
 
 
 

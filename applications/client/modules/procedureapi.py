@@ -44,7 +44,7 @@ class ProcedureApi(object):
         Param tag: This is the ID of the sensor (or additional data to differentiate the outputs)"""
         db = current.db
         timestamp = timestamp or datetime.datetime.utcnow()
-        db.outputs.insert(modulename=self.module_name,
+        db.outputs.insert(procedure_id=self.module_name,
                           name=name,
                           output_value=json_plus.Serializable.dumps(data),
                           time_stamp=timestamp,
@@ -69,7 +69,7 @@ class ProcedureApi(object):
         param log_level : 0 for error, 1 for warning, 2 for info, 3 for debug """
         db = current.db
         db.logs.insert(time_stamp=datetime.datetime.utcnow(),
-                       modulename=self.module_name,
+                       procedure_id=self.module_name,
                        log_level=log_level,
                        log_message=log_text)
         db.commit()

@@ -12,4 +12,5 @@ class DeviceProdecure(Procedure):
 
     def run(self):
         self.api.log_info("Look at me!  I am running! x = %d" % self.x)
+        logger.error("Look at me!  I am running! x = %d" % self.x)
         self.x += 1
