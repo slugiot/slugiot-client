@@ -1,7 +1,7 @@
 #!usr/bin/env bash
 ### BEGIN INIT INFO
 # Provides:          web2py
-# Required-Start:    $local_fs ram_fs
+# Required-Start:    $local_fs
 # Required-Stop:
 # Default-Start:     S
 # Default-Stop:         0 6
@@ -24,8 +24,7 @@ do_start () {
     /sbin/start-stop-daemon --start --chuid $USER -d $APPDIR --background -v \
         --user $USER --pidfile $PID_FILE --make-pidfile --exec $PYTHON \
         --startas $PYTHON -- $CMD -a $PASS -p $PORT -K $APP -i 0.0.0.0 -X
-    log_success_msg "Started web2py"
-    log_failure_msg "Failed to start web2py"
+    log_success_msg "Started web2py!"
 }
 
 do_stop () {
@@ -33,7 +32,6 @@ do_stop () {
         --exec $PYTHON --retry 10
     rm $PID_FILE
     log_success_msg "Stopped web2py"
-    log_failure_msg "Failed to stop web2py"
 }
 
 do_startup(){
@@ -47,21 +45,21 @@ do_startup(){
     # Check if webserver up and running and, if so, open web browser to client and
     # run startup script from localhost.
     nc -z $pyip $PORT; wup=$?;
-    if [$wup -ne 0]; then
-      echo "Connection to $pyip on port $PORT failed"
+    if [ $wup -ne 0 ]; then
+      log_failure_msg "Connection to $pyip on port $PORT failed"
       exit 1
     else
-      echo "Connection to client succeeded; access using http://$pyip:$PORT/"
-      echo "Begin call to _start() from localhost..."
-      httpUrl="http://127.0.0.1:$PORT/startup/_start.html"
+      log_success_message "Connection to client succeeded.  Begin call to _startup() from localhost..."
+      httpUrl="http://127.0.0.1:$PORT/startup/_startup.html"
       rep=$(curl -o /dev/null --silent --head --write-out '%{http_code}\n' $httpUrl)
       status=$?
-      echo "$rep"
-      exit $status
+      if [ $status -ne 0 && $rep -ne 200 ]; then
+        log_warning_msg "Failed to startup $APP completely; http_status = $status.  Check it!!!"
+      else
+        log_success_msg "Completed startup of $APP."
+      fi
+      log_success_msg "Access admin area using https://$pyip:$PORT/admin/"
     fi
-
-    log_success_msg "Started $APP"
-    log_failure_msg "Failed to start $APP"
 }
 
 

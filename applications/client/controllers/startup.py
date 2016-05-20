@@ -1,7 +1,7 @@
 from gluon import current
 import datetime
 
-def _start():
+def _startup():
     """NB: procedureapi.add_schedule() could have been used to add sync schedules
     by passing a dummy procedure name, but this is the only place where scheduling
     of these functions occurs, and it seemed safer to create tasks directly.  Also,
