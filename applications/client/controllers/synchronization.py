@@ -7,15 +7,14 @@
 ## - user is required for authentication and authorization
 ## - download is for downloading files uploaded in the db (does streaming)
 #########################################################################
-import requests
-from gluon import serializers
+import datetime
 import slugiot_synchronization
 
 
 def log_message():
     if not (request.env.HTTP_HOST.startswith('localhost') or request.env.HTTP_HOST.startswith('127.0.0.1')):
         raise HTTP(403)
-    log_message = "Sample Message: " + datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    log_message = "Sample Message: " + datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
     if ('log_message' in request.vars):
         log_message = request.vars.log_message
     log_level = 3
@@ -30,7 +29,7 @@ def log_message():
 def add_output():
     if not (request.env.HTTP_HOST.startswith('localhost') or request.env.HTTP_HOST.startswith('127.0.0.1')):
         raise HTTP(403)
-    output_value = datetime.utcnow()
+    output_value = datetime.datetime.utcnow()
     if ('output_value' in request.vars):
         output_value = request.vars.output_value
     output_key = "current_time"
@@ -48,7 +47,7 @@ def set_value():
     key = "synchronization_example"
     if ('key' in request.vars):
         key = request.vars.key
-    value = datetime.utcnow()
+    value = datetime.datetime.utcnow()
     if ('value' in request.vars):
         value = request.vars.value
     values = dict()
