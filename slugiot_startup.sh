@@ -1,19 +1,87 @@
 #!usr/bin/env bash
+### BEGIN INIT INFO
+# Provides:          web2py
+# Required-Start:    $local_fs
+# Required-Stop:
+# Default-Start:     S
+# Default-Stop:         0 6
+# Short-Description: Starts local web2py server, with scheduler running in background for APP.
+### END INIT INFO
 
-# TODO: Later will add variables for port number, application, and password.
+PATH="/sbin:/bin:/usr/bin"
+PID_FILE=/var/run/web2py.pid
+USER=pi
+APPDIR=/home/pi/Documents
+CMD=$APPDIR/slugiot-client/web2py.py
+PYTHON=/usr/bin/python
+PORT=8080
+PASS=password
+APP=client
 
-# Fetch internal network ip into variable
-myip=
-while IFS=$': \t' read -a line ;do
-    [ -z "${line%inet}" ] && ip=${line[${#line[1]}>4?1:2]} &&
-        [ "${ip#127.0.0.1}" ] && myip=$ip
-  done< <(LANG=C /sbin/ifconfig)
+. /lib/lsb/init-functions
 
-# start web2py with start scheduler command option
-python web2py.py -a password -i $myip -p 8080 -K client -X
+# TODO - Remove -e flag when done testing.  Better: allow to run this script with debug option.
+do_start () {
+    /sbin/start-stop-daemon --start --chuid $USER -d $APPDIR --background -v \
+        --user $USER --pidfile $PID_FILE --make-pidfile --exec $PYTHON \
+        --startas $PYTHON -- $CMD -e -a $PASS -p $PORT -K $APP -i 0.0.0.0 -X
+    log_success_msg "Started web2py!"
+}
 
-# TODO: ping port to check webserver running; use awk to see if response (pid), then can start()
-# netstat -anp | grep 8080
+do_stop () {
+    /sbin/start-stop-daemon --stop -d $APPDIR -v --user $USER --pidfile $PID_FILE \
+        --exec $PYTHON --retry 10
+    rm $PID_FILE
+    log_success_msg "Stopped web2py"
+}
 
-# Run startup script
-curl http://$myip:8080/startup/start.html
+do_startup(){
+    # Fetch internal network ip into variable
+    pyip=
+    while IFS=$': \t' read -a line ;do
+        [ -z "${line%inet}" ] && ip=${line[${#line[1]}>4?1:2]} &&
+            [ "${ip#127.0.0.1}" ] && pyip=$ip
+      done< <(LANG=C /sbin/ifconfig)
+
+    # Check if webserver up and running and, if so, open web browser to client and
+    # run startup script from localhost.
+    nc -z $pyip $PORT; wup=$?;
+    if [ $wup -ne 0 ]; then
+      log_failure_msg "Connection to $pyip on port $PORT failed"
+      exit 1
+    else
+      log_success_message "Connection to client succeeded.  Begin call to _startup() from localhost..."
+      httpUrl="http://127.0.0.1:$PORT/startup/_startup.html"
+      rep=$(curl -o /dev/null --silent --head --write-out '%{http_code}\n' $httpUrl)
+      status=$?
+      if [ $status -ne 0 && $rep -ne 200 ]; then
+        log_warning_msg "Failed to startup $APP completely; http_status = $rep.  Check it!!!"
+      else
+        # TODO - Final checks per _startup() controller.  E.g., sqlite3 util check scheduler created.
+        log_success_msg "Completed startup of $APP with http_status = $rep "
+      fi
+      log_success_msg "Access admin area using http://$pyip:$PORT/ "
+    fi
+}
+
+
+case "$1" in
+  start)
+        do_start
+        sleep 15
+        do_startup
+        ;;
+  restart|reload|force-reload)
+        do_stop || log_failure_msg "Not running"
+        do_start
+        sleep 15
+        do_startup
+        ;;
+  stop|status)
+        do_stop
+        ;;
+  *)
+        echo "Usage: $0 start|stop" >&2
+        exit 3
+        ;;
+esac

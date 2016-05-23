@@ -1,19 +1,26 @@
-def start():
+from gluon import current
+import datetime
+
+def _startup():
     """NB: procedureapi.add_schedule() could have been used to add sync schedules
     by passing a dummy procedure name, but this is the only place where scheduling
     of these functions occurs, and it seemed safer to create tasks directly.  Also,
     since this is the only place at which the task is scheduled, it is safe to
     simply delete and recreate tasks at each startup (the parameters don't change)"""
 
-    from gluon import current
-    import datetime
+    # TODO - test this code to a check against external calls.  Also check on the underscore
+    if not (request.env.HTTP_HOST.startswith('localhost') |
+                request.env.HTTP_HOST.startswith('127')):
+        raise (HTTP(403))
+
 
     start_time = datetime.datetime.now()
 
+    # TODO - change database to one specific to scheuler (as per recommendation in web2py docs)
     db(db.scheduler_task.task_name == 'do_procedure_sync').delete()
     db(db.scheduler_task.task_name == 'do_synchronization').delete()
 
-    slugiot_scheduler.queue_task(
+    current.slugiot_scheduler.queue_task(
         task_name='do_procedure_sync',
         function='proc_sync',
         start_time=start_time,
@@ -27,7 +34,7 @@ def start():
     current.db.commit();
 
 
-    slugiot_scheduler.queue_task(
+    current.slugiot_scheduler.queue_task(
         task_name='do_synchronization',
         function='synchronize',
         start_time=start_time,

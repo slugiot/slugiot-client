@@ -12,9 +12,19 @@
 
 import unittest
 from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
 import os
 #from subprocess import Popen, PIPE
 demo_time = 60
+
+def login_helper(driver):
+    driver.get('http://127.0.0.1:8000/user/login')
+    email_element = driver.find_element_by_id("auth_user_email")
+    email_element.send_keys('test@test.com')
+    password_element = driver.find_element_by_id("auth_user_password")
+    password_element.send_keys('testtesttest')
+    password_element.send_keys(Keys.ENTER)
+    print('Logged in and redirected to dashboard successfully')
 
 class ProcHarnessTest(unittest.TestCase):
 
@@ -23,23 +33,19 @@ class ProcHarnessTest(unittest.TestCase):
 
         normalizedPath_c = os.path.abspath(os.getcwd() + "/../logs/client_log.txt")
         normalizedPath_s = os.path.abspath(os.getcwd() + "/../logs/server_log.txt")
-        #normalizedPath = os.path.abspath(os.getcwd() + "/../web2py.py")
 
         self.client_log = open(normalizedPath_c, "r")
         self.server_log = open(normalizedPath_s, "r")
 
-        #p_c = Popen("python " + normalizedPath + " -p 7999 -a blah 2>> " + normalizedPath_c + " 1>> " + os.devnull, shell=True)
-        #p_s = Popen("python " + normalizedPath + " -p 8000 -a blah 2>> " + normalizedPath_s + " 1>> " + os.devnull, shell=True)
-
-        #self.pid_c = p_c.pid
-        #self.pid_s = p_s.pid
-
         self.client_test_url = 'http://127.0.0.1:7999/test_proc_harness'
         self.proc_dir = os.path.abspath(os.getcwd() + "/../applications/client/modules/procedures")
+
 
     def test_clear_tables(self):
         server = False
         client = False
+
+        login_helper(self.driver)
         self.driver.get(self.client_test_url + '/clear_tables')
 
         for line in self.server_log.xreadlines():
@@ -54,6 +60,8 @@ class ProcHarnessTest(unittest.TestCase):
 
     def test_new_proc(self):
         new_proc = False
+
+        login_helper(self.driver)
         self.driver.get(self.client_test_url + '/new_proc_test')
 
         for line in self.server_log.xreadlines():
@@ -69,6 +77,7 @@ class ProcHarnessTest(unittest.TestCase):
     def test_update_proc(self):
         update_proc = False
 
+        login_helper(self.driver)
         self.driver.get(self.client_test_url + '/update_proc_test')
 
         for line in self.server_log.xreadlines():
@@ -87,6 +96,7 @@ class ProcHarnessTest(unittest.TestCase):
     def test_no_update_proc(self):
         no_update_proc = False
 
+        login_helper(self.driver)
         self.driver.get(self.client_test_url + '/not_update_proc_test')
 
         for line in self.server_log.xreadlines():
@@ -103,9 +113,6 @@ class ProcHarnessTest(unittest.TestCase):
         self.assertFalse(no_update_proc)
 
     def tearDown(self):
-        #os.killpg(os.getpgid(self.pid_c), signal.SIGTERM)
-        #os.killpg(os.getpgid(self.pid_s), signal.SIGTERM)
-
         self.driver.quit()
         self.client_log.close()
         self.server_log.close()

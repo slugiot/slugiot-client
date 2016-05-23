@@ -1,6 +1,7 @@
 import constants
 import datetime
 import json_plus
+import logging
 from gluon import current
 
 class Procedure(json_plus.Serializable):
@@ -12,22 +13,8 @@ class Procedure(json_plus.Serializable):
     def __init__(self):
         self.api = None
 
-    def __init__(self, procedure_name):
-        self.procedure_name = procedure_name
-
-    def write_value(self, dictionary):
-        """ Writes key value pairs into the values table
-        param dictionary: Takes dictionary of key/value pairs as input
-        """
-        db = current.db
-        for key,val in dictionary.iteritems():
-            # Update the key value for this module if it already exists
-            db.module_values.update_or_insert((db.module_values.name == key) & (db.module_values.procedure_id == self.procedure_name),
-                                              time_stamp=datetime.datetime.utcnow(),
-                                              procedure_id=self.procedure_name,
-                                              name=key,
-                                              module_value=json_plus.Serializable.dumps(val))
-        db.commit()
+    # Can be over-ridden in subclasses.
+    def init(self): pass
 
     @staticmethod
     def create(module_name):
@@ -45,6 +32,10 @@ class ProcedureApi(object):
 
     def __init__(self, module_name):
         self.module_name = module_name
+
+        logger = logging.getLogger("web2py.app.client")
+        logger.setLevel(logging.INFO)
+        logger.info("ProcedureApi " + module_name)
 
     def write_output(self, name, data, tag=None, timestamp=None):
         """ This write the value and the tag to the outputs table.
@@ -123,8 +114,14 @@ class ProcedureApi(object):
                             Defaults to 1, which means the function is run once
         param num_retries : The number of times a task is retried if it fails
         """
+        logger = logging.getLogger("web2py.app.client")
+        logger.setLevel(logging.INFO)
+        logger.info("Adding scheduled task for the procedure")
+
         start_time = start_time or datetime.datetime.now()
-        start_time += datetime.timedelta(seconds=delay)
+        start_time += datetime.timedelta(seconds=10)
+
+        logger.info("start time: " + str(start_time))
 
         current.slugiot_scheduler.queue_task(
             task_name=str(self.module_name),
@@ -138,9 +135,14 @@ class ProcedureApi(object):
             retry_failed=num_retries)
         current.db.commit()
 
+        logger.info("schedule should have been added to task table")
+
     def remove_schedule(self):
         """Deletes the existing schedule for this procedure
         Also deletes the procedure state"""
+        logger = logging.getLogger("web2py.app.client")
+        logger.setLevel(logging.INFO)
+        logger.info("Removing scheduled task for the procedure")
 
         self.log_info("Removing scheduled task for the procedure")
         db = current.db
