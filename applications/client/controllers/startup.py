@@ -1,5 +1,8 @@
 from gluon import current
 import datetime
+import procedureapi
+
+db = current.db
 
 def _startup():
     """NB: procedureapi.add_schedule() could have been used to add sync schedules
@@ -12,6 +15,12 @@ def _startup():
     if not (request.env.HTTP_HOST.startswith('localhost') |
                 request.env.HTTP_HOST.startswith('127')):
         raise (HTTP(403))
+
+
+    proc_rows = db(db.procedures).select()
+    for row in proc_rows:
+        api = procedureapi.ProcedureApi(row.name)
+        api.add_schedule()
 
 
     start_time = datetime.datetime.now()
