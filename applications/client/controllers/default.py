@@ -39,28 +39,20 @@ def settings():
     """
     Settings page for the device to set device ID.
     """
-    device_id_row = db(db.settings.setting_name == 'device_id').select().first()
-    device_id = device_id_row.setting_value if device_id_row is not None else None
-
-    # For new or edit option
-    if request.vars.new or request.vars.edit:
-        form = SQLFORM.factory(Field('device_id'))
-        edit_button = T("")
-        if device_id is not None:
-            form.vars.device_id = device_id
-
-        if form.process().accepted:
-            db.settings.update_or_insert(db.settings.setting_name == 'device_id',
-                                         setting_name='device_id',
-                                         setting_value=form.vars.device_id)
-
-            redirect(URL('default', 'index'))
-
-    # For view option
-    else:
-        form = H2("Device ID: ", str(device_id))
-        edit_button = A("Edit", _href=URL('default', 'settings', vars={'edit': True}), _class='btn btn-primary')
-
+    device_id = _get_device_id()
+    # If the device_id is None, we have to enter one.
+    # Otherwise, we offer a form, which is view-only in general,
+    # and can be turned into an edit form if needed.
+    request_edit = request.vars.edit == 'y'
+    is_edit = device_id is None or request_edit
+    form = SQLFORM.factory(Field('device_id'), readonly=not is_edit)
+    form.vars.device_id = device_id
+    edit_button = None if is_edit else A("Edit", _href=URL('default', 'settings', vars={'edit': True}), _class='btn btn-primary')
+    if form.process().accepted:
+        db.settings.update_or_insert(db.settings.setting_name == 'device_id',
+                                     setting_name='device_id',
+                                     setting_value=form.vars.device_id)
+        redirect(URL('default', 'index'))
     return dict(form=form, edit_button=edit_button)
 
 @request.restful()
