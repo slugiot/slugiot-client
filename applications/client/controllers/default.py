@@ -10,7 +10,7 @@
 import slugiot_settings
 
 
-def _device_id_exists():
+def _get_device_id():
     """
     Check for device ID being present.
     It makes two checks:
@@ -21,7 +21,7 @@ def _device_id_exists():
     """
     device_id_row = db(db.settings.setting_name == 'device_id').select().first()
     device_id = device_id_row.setting_value if device_id_row is not None else None
-    return True if device_id is not None else False
+    return device_id
 
 
 def index():
@@ -31,15 +31,8 @@ def index():
     Shows option to set/view a device ID based on whether the ID exists or not
     """
     # Check if settings exist already
-    if not _device_id_exists():
-        message = T('Welcome to SlugIOT Client. Please register device')
-        settings = A("Click here to initialize your device", _href=URL('default', 'settings', vars={'new': True}),
-                     _class='btn btn-primary')
-    else:
-        message = T('This device is registered')
-        settings = A("Click here to see/edit device settings", _href=URL('default', 'settings'),
-                     _class='btn btn-success')
-    return dict(message=message, settings=settings)
+    device_id = _get_device_id()
+    return dict(device_id=device_id)
 
 
 def settings():

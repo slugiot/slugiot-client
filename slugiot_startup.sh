@@ -11,7 +11,7 @@
 PATH="/sbin:/bin:/usr/bin"
 PID_FILE=/var/run/web2py.pid
 USER=pi
-APPDIR=/home/pi/Documents
+APPDIR=/home/pi
 CMD=$APPDIR/slugiot-client/web2py.py
 PYTHON=/usr/bin/python
 PORT=8080
