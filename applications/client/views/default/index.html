@@ -4,7 +4,7 @@
   <div class="main_page">
     <h1>Welcome to SlugIOT Client</h1>
     {{if device_id is not None:}}
-        <p>This device is registered with the followign id:</p>
+        <p>This device is registered with the following id:</p>
         <p>{{=device_id}}</p>
         {{=A("Edit registration information", _href=URL('default', 'settings'),
                      _class='btn btn-success')}}
