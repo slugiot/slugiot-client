@@ -151,6 +151,9 @@ class ProcedureApi(object):
         db.commit()
 
     def get_setting(self, setting_name):
+        """Retrieves a setting value from the database table settings.
+        Returns None if the setting does not exist
+        parameter setting_name : The settings name whose value needs to be retrieved"""
         import slugiot_settings
         settings = slugiot_settings.SlugIOTSettings()
         return settings.get_setting_value(setting_name=setting_name, procedure_id=self.module_name)
