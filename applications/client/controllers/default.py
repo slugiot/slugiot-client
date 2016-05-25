@@ -45,9 +45,11 @@ def settings():
     # and can be turned into an edit form if needed.
     request_edit = request.vars.edit == 'y'
     is_edit = device_id is None or request_edit
-    form = SQLFORM.factory(Field('device_id'), readonly=not is_edit)
+    form = SQLFORM.factory(Field('device_id', default=device_id), readonly=not is_edit)
+    if is_edit:
+        form.add_button('Cancel', URL('default', 'settings'), _class='btn btn-warning')
+    edit_button = None if is_edit else A(T('Edit'), _href=URL('default', 'settings', vars={'edit': 'y'}), _class='btn btn-primary')
     form.vars.device_id = device_id
-    edit_button = None if is_edit else A("Edit", _href=URL('default', 'settings', vars={'edit': 'y'}), _class='btn btn-primary')
     if form.process().accepted:
         db.settings.update_or_insert(db.settings.setting_name == 'device_id',
                                      setting_name='device_id',

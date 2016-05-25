@@ -1,10 +1,14 @@
 {{extend 'layout.html'}}
 
-<div id="container">
+<div class="container">
     <h1 align="center">Device Registration</h1>
     <br>
-    <div id="add_form" class="col-sm-10 col-md-10">
+    <div id="add_form" class="col-md-9">
     {{=form}}
-    {{if edit_button:}}{{=edit_button}}{{pass}}
+      {{if edit_button:}}
+      <div class="row">
+        <div class="col-sm-offset-3 col-sm-3">{{=edit_button}}</div>
+      </div>
+      {{pass}}
     </div>
 </div>
