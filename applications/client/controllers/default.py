@@ -19,7 +19,7 @@ def _get_device_id():
     :return:
     :rtype:
     """
-    device_id_row = db(db.settings.setting_name == 'device_id').select().first()
+    device_id_row = ramdb(ramdb.settings.setting_name == 'device_id').select().first()
     device_id = device_id_row.setting_value if device_id_row is not None else None
     return device_id
 
@@ -51,9 +51,9 @@ def settings():
     edit_button = None if is_edit else A(T('Edit'), _href=URL('default', 'settings', vars={'edit': 'y'}), _class='btn btn-primary')
     form.vars.device_id = device_id
     if form.process().accepted:
-        db.settings.update_or_insert(db.settings.setting_name == 'device_id',
-                                     setting_name='device_id',
-                                     setting_value=form.vars.device_id)
+        ramdb.settings.update_or_insert(ramdb.settings.setting_name == 'device_id',
+                                        setting_name='device_id',
+                                        setting_value=form.vars.device_id)
         redirect(URL('default', 'index'))
     return dict(form=form, edit_button=edit_button)
 
@@ -118,7 +118,7 @@ def download():
     allows downloading of uploaded files
     http://..../[app]/default/download/[filename]
     """
-    return response.download(request, db)
+    return response.download(request, ramdb)
 
 
 def call():

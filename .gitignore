@@ -52,6 +52,5 @@ HOWTO-web2py-devel
 .idea/*
 site-packages/
 logs/
-applications/client/private/appconfig.ini
 appl.yaml
 applications/client/modules/procedures/*

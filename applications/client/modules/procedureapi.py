@@ -42,37 +42,37 @@ class ProcedureApi(object):
         param name : Name of the output
         param data : The value of the output
         Param tag: This is the ID of the sensor (or additional data to differentiate the outputs)"""
-        db = current.db
+        ramdb = current.ramdb
         timestamp = timestamp or datetime.datetime.utcnow()
-        db.outputs.insert(procedure_id=self.module_name,
+        ramdb.outputs.insert(procedure_id=self.module_name,
                           name=name,
                           output_value=json_plus.Serializable.dumps(data),
                           time_stamp=timestamp,
                           tag=tag)
-        db.commit()
+        ramdb.commit()
 
     def write_outputs(self, data, tag=None):
         """ This write the values and the tag to the outputs table.
         param data : dict of key/value pairs to be written to the table. All pairs will have the same timestamp
         Param tag: This is the ID of the sensor (or additional data to differentiate the outputs)"""
 
-        db = current.db
+        ramdb = current.ramdb
         time_now = datetime.datetime.utcnow()
         for name, data in data.iteritems():
             self.write_output(name, data, tag=tag, timestamp=time_now)
-        db.commit()
+        ramdb.commit()
 
     def log(self, log_text, log_level=constants.LogLevel.INFO):
         # Luca: Can you use the LogLevel.INFO defined
         """Writes a log message to the logs table
         param log_text : message to be logged
         param log_level : 0 for error, 1 for warning, 2 for info, 3 for debug """
-        db = current.db
-        db.logs.insert(time_stamp=datetime.datetime.utcnow(),
+        ramdb = current.ramdb
+        ramdb.logs.insert(time_stamp=datetime.datetime.utcnow(),
                        procedure_id=self.module_name,
                        log_level=log_level,
                        log_message=log_text)
-        db.commit()
+        ramdb.commit()
 
     # Useful shorthands.
     def log_debug(self, s):
@@ -133,7 +133,7 @@ class ProcedureApi(object):
             stop_time=stop_time,
             timeout=timeout,
             retry_failed=num_retries)
-        current.db.commit()
+        current.ramdb.commit()
 
         logger.info("schedule should have been added to task table")
 
@@ -145,10 +145,10 @@ class ProcedureApi(object):
         logger.info("Removing scheduled task for the procedure")
 
         self.log_info("Removing scheduled task for the procedure")
-        db = current.db
-        db((db.scheduler_task.task_name == str(self.module_name))).delete()
-        db((db.procedure_state.procedure_id == str(self.module_name))).delete()
-        db.commit()
+        ramdb = current.ramdb
+        ramdb((ramdb.scheduler_task.task_name == str(self.module_name))).delete()
+        ramdb((ramdb.procedure_state.procedure_id == str(self.module_name))).delete()
+        ramdb.commit()
 
     def get_setting(self, setting_name):
         """Retrieves a setting value from the database table settings.
