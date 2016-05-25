@@ -25,8 +25,8 @@ def _startup():
         function='do_procedure_sync',
         start_time=start_time,
         pvars={},
-        repeats=1,  # If repeats=0 (unlimited), it would constantly fail.
-        period=60,
+        repeats=0,  # If repeats=0 (unlimited), it would constantly fail.
+        period=30,
         timeout=60,
         retry_failed=1
     )
