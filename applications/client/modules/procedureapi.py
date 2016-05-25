@@ -3,6 +3,7 @@ import datetime
 import json_plus
 import logging
 from gluon import current
+import inspect
 
 class Procedure(json_plus.Serializable):
     """"This is the base class of all procedures.
@@ -91,7 +92,7 @@ class ProcedureApi(object):
         return self.log(s, log_level=constants.LogLevel.CRITICAL)
 
     def add_schedule(self,
-                     class_name='DeviceProdecure',
+                     class_name=None,
                      function_args=[],
                      delay=0,
                      start_time=None,
@@ -119,6 +120,10 @@ class ProcedureApi(object):
         logger.info("Adding scheduled task for the procedure")
 
         start_time = start_time or datetime.datetime.now()
+        start_time += datetime.timedelta(seconds=delay)
+        mod_name = __import__("procedures." + self.module_name, fromlist=[''])
+        get_class_name = inspect.getmembers(mod_name, inspect.isclass)
+        get_class_name = [c for _, c in get_class_name if issubclass(c, Procedure)]
         start_time += datetime.timedelta(seconds=10)
 
         logger.info("start time: " + str(start_time))
@@ -150,6 +155,7 @@ class ProcedureApi(object):
         db((db.procedure_state.procedure_id == str(self.module_name))).delete()
         db.commit()
 
+
     def get_setting(self, setting_name):
         """Retrieves a setting value from the database table settings.
         Returns None if the setting does not exist
@@ -157,3 +163,4 @@ class ProcedureApi(object):
         import slugiot_settings
         settings = slugiot_settings.SlugIOTSettings()
         return settings.get_setting_value(setting_name=setting_name, procedure_id=self.module_name)
+
