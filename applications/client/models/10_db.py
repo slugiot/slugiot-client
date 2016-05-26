@@ -27,11 +27,7 @@ db = DAL(myconf.get('db.uri'),
 # testing or on the actual device.
 import os
 
-is_testing = os.environ.get('SLUGIOT_TESTING')
-if is_testing == None:
-    is_testing = False
-elif isinstance(is_testing, str):
-    is_testing = is_testing == 'y' or is_testing == 'Y'
+is_testing = os.environ.get('SLUGIOT_TESTING') == 'y'
 
 if not is_testing:
     # We create it in the ram disk.
