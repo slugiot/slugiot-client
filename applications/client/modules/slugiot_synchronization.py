@@ -11,7 +11,7 @@ import proc_harness_module
 sync_lock = threading.Lock()
 
 
-def synch_all_c2s(setup_info, tables=["logs", "outputs", "module_values"]):
+def synch_all_c2s(setup_info, tables=["logs", "outputs"]):
     return all([synchronize_c2s(setup_info, t) for t in tables])
 
 def synchronize_c2s(setup_info, table_name):
@@ -19,8 +19,8 @@ def synchronize_c2s(setup_info, table_name):
     This function syncs the information in table_name to the corresponding server table.
     """
     with sync_lock:
-        db = setup_info.db
-        rows = get_data_for_synchronization(setup_info, table_name)
+        db = setup_info.ramdb
+        rows = get_data_for_synchronization(db, table_name)
         if len(rows) > 0:
             try:
                 # Let's get the device id.
@@ -47,8 +47,7 @@ def synchronize_c2s(setup_info, table_name):
             return False
         return True
 
-def get_data_for_synchronization(setup_info, table_name):
-    db = setup_info.db
+def get_data_for_synchronization(db, table_name):
     return db(db[table_name].time_stamp > get_last_synchronized(db, table_name)).select(
         orderby=~db[table_name].time_stamp).as_list()
 
@@ -69,6 +68,7 @@ def set_last_synchronized(db, table_name, timestamp):
 
 
 def synchronize_settings(setup_info):
+    """Synchronizes the settings from the settings table."""
     # get device id
     # get last synchronized time for 'settings' table
     db = setup_info.db
@@ -115,20 +115,20 @@ def save_settings(setup_info, setting_data):
             # getting last updated time
             last_updated = setting['last_updated']
             last_updated_datetime = last_updated
-            if (not isinstance(last_updated, datetime)):
+            if not isinstance(last_updated, datetime):
                 last_updated_datetime = parse_date(last_updated)
 
-            if ( last_updated_datetime > synchronize_time):
+            if last_updated_datetime > synchronize_time:
                 synchronize_time = last_updated_datetime
 
         set_last_synchronized(db, 'settings', synchronize_time)
-        if (len(procedures) > 0):
+        if len(procedures) > 0:
             proc_harness_module.enqueue_procedure_task(procedures)
 
         return True
     except Exception, _:
         # We failed synch.  We write this to the logs.
-        db.logs.insert(procedure_id=None, log_level=LogLevel.WARN,
+        setup_info.ramdb.logs.insert(procedure_id=None, log_level=LogLevel.WARN,
                        log_message="Synch failed for settings: %s" % traceback.format_exc())
 
     return False

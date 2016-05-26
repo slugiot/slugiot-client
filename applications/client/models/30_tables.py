@@ -31,22 +31,22 @@ import datetime
 
 # Synched server -> client (except for some special rows).
 db.define_table('settings',
-                   Field('procedure_id'),  # Can be Null for device-wide settings.
+                Field('procedure_id'),  # Can be Null for device-wide settings.
                 Field('setting_name'),
-                   Field('setting_value'),  # Encoded in json-plus.
+                Field('setting_value'),  # Encoded in json-plus.
                 Field('last_updated', 'datetime', default=datetime.datetime.utcnow(), update=datetime.datetime.utcnow())
-                   )
+                )
 
 db.define_table('procedures',
-                   Field('procedure_id', 'bigint', required=True),  # key
+                Field('procedure_id', 'bigint', required=True),  # key
                 Field('last_update', 'datetime', default=datetime.datetime.utcnow(), required=True),
-                   Field('name', 'string')  # Name of procedure
-                   )
+                Field('name', 'string')  # Name of procedure
+                )
 
 db.define_table('synchronization_events',
-                   Field('table_name'),
-                   Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
-                   )
+                Field('table_name'),
+                Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
+                )
 
 ######### CLIENT -> SERVER
 
@@ -90,7 +90,8 @@ settings = slugiot_settings.SlugIOTSettings()
 # Let's initialize the setup.
 import slugiot_setup
 slugiot_setup = slugiot_setup.SlugIOTSetup()
-slugiot_setup.db = ramdb
+slugiot_setup.db = db
+slugiot_setup.ramdb = ramdb
 slugiot_setup.server_url = server_url
 slugiot_setup.settings = settings
 slugiot_setup.device_id = settings.get_device_id()

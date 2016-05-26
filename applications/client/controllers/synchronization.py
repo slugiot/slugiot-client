@@ -58,9 +58,6 @@ def set_value():
     return response.json({"values":values})
 
 
-
-
-
 @request.restful()
 def synchronize_logs():
     """
@@ -71,7 +68,7 @@ def synchronize_logs():
        :rtype: Dictionary
     """
     def GET(*args, **vars):
-        return response.json(slugiot_synchronization.get_data_for_synchronization(slugiot_setup, "logs"))
+        return response.json(slugiot_synchronization.get_data_for_synchronization(slugiot_setup.ramdb, "logs"))
     def POST(*args, **vars):
         if (slugiot_synchronization.synchronize_c2s(slugiot_setup, "logs")):
             return "ok"
@@ -92,7 +89,7 @@ def synchronize_outputs():
        :rtype: Dictionary
     """
     def GET(*args, **vars):
-        return response.json(slugiot_synchronization.get_data_for_synchronization(slugiot_setup, "outputs"))
+        return response.json(slugiot_synchronization.get_data_for_synchronization(slugiot_setup.ramdb, "outputs"))
     def POST(*args, **vars):
         if (slugiot_synchronization.synchronize_c2s(slugiot_setup, "outputs")):
             return "ok"
@@ -112,7 +109,7 @@ def synchronize_module_values():
        :rtype: Dictionary
     """
     def GET(*args, **vars):
-        return response.json(slugiot_synchronization.get_data_for_synchronization(slugiot_setup, "module_values"))
+        return response.json(slugiot_synchronization.get_data_for_synchronization(slugiot_setup.ramdb, "module_values"))
     def POST(*args, **vars):
         if (slugiot_synchronization.synchronize_c2s(slugiot_setup, "module_values")):
             return "ok"
