@@ -117,21 +117,25 @@ class ProcedureApi(object):
         """
         logger = logging.getLogger("web2py.app.client")
         logger.setLevel(logging.INFO)
-        logger.info("Adding scheduled task for the procedure")
+        logger.info("Adding scheduled task for the procedure %s" % self.module_name)
+        self.log_info("Adding scheduled task for the procedure %s" % self.module_name)
 
         start_time = start_time or datetime.datetime.now()
         start_time += datetime.timedelta(seconds=delay)
-        mod_name = __import__("procedures." + self.module_name, fromlist=[''])
-        get_class_name = inspect.getmembers(mod_name, inspect.isclass)
-        get_class_name = [c for _, c in get_class_name if issubclass(c, Procedure)]
-        start_time += datetime.timedelta(seconds=10)
 
+        mod_name = __import__("procedures." + self.module_name, fromlist=[''])
+        procedure_class_name = inspect.getmembers(mod_name, inspect.isclass)
+        procedure_class_name = [cl_name for cl_name, c in procedure_class_name if
+                                (issubclass(c, mod_name.Procedure) & (cl_name != Procedure.__name__))]
+        class_name = class_name or procedure_class_name[0]
+
+        start_time += datetime.timedelta(seconds=10)
         logger.info("start time: " + str(start_time))
 
         current.slugiot_scheduler.queue_task(
             task_name=str(self.module_name),
             function='run_procedure',
-            pvars={'module_name': self.module_name, 'class_name': class_name, 'function_args': function_args},
+            pvars={'module_name': self.module_name, 'class_name': str(class_name), 'function_args': function_args},
             repeats=repeats,
             period=period_between_runs,
             start_time=start_time,
@@ -140,16 +144,15 @@ class ProcedureApi(object):
             retry_failed=num_retries)
         current.db.commit()
 
-        logger.info("schedule should have been added to task table")
 
     def remove_schedule(self):
         """Deletes the existing schedule for this procedure
         Also deletes the procedure state"""
         logger = logging.getLogger("web2py.app.client")
         logger.setLevel(logging.INFO)
-        logger.info("Removing scheduled task for the procedure")
+        logger.info("Removing scheduled task for the procedure %s" % self.module_name)
 
-        self.log_info("Removing scheduled task for the procedure")
+        self.log_info("Removing scheduled task for the procedure %s" % self.module_name)
         db = current.db
         db((db.scheduler_task.task_name == str(self.module_name))).delete()
         db((db.procedure_state.procedure_id == str(self.module_name))).delete()
