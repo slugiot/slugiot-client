@@ -54,3 +54,5 @@ site-packages/
 logs/
 appl.yaml
 applications/client/modules/procedures/*
+applications/client/modules/numpy.py
+applications/client/private/appconfig.ini
