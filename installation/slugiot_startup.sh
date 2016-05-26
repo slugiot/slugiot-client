@@ -1,7 +1,7 @@
 #!usr/bin/env bash
 ### BEGIN INIT INFO
 # Provides:          web2py
-# Required-Start:    $local_fs
+# Required-Start:    $local_fs ramfs
 # Required-Stop:
 # Default-Start:     S
 # Default-Stop:         0 6

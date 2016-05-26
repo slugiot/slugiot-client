@@ -16,9 +16,9 @@ def run_procedure(module_name, class_name, function_args):
 
     log_both("Calling procedure %s with arguments %r" % (module_name, function_args))
     # Gets the previous run, if any.
-    previous_run = db((db.procedure_state.procedure_id == module_name) &
-                      (db.procedure_state.class_name == class_name)).select(
-        orderby=~db.procedure_state.time_stamp).first()
+    previous_run = ramdb((ramdb.procedure_state.procedure_id == module_name) &
+                         (ramdb.procedure_state.class_name == class_name)).select(
+        orderby=~ramdb.procedure_state.time_stamp).first()
     if previous_run is None:
         # This is the first time the procedure runs.
         # We instantiate the class.
@@ -37,10 +37,10 @@ def run_procedure(module_name, class_name, function_args):
     # And serialize the output for the next run.
     procedure_state_serialized = procedure.to_json()
     api.log_info("Procedure state: %s " % procedure_state_serialized)
-    db.procedure_state.insert(procedure_id=module_name,
-                              class_name=class_name,
-                              procedure_state=procedure_state_serialized)
-    db.commit()
+    ramdb.procedure_state.insert(procedure_id=module_name,
+                                 class_name=class_name,
+                                 procedure_state=procedure_state_serialized)
+    ramdb.commit()
 
 
 def scheduled_synchronize():
@@ -50,15 +50,14 @@ def scheduled_synchronize():
 
 
 def proc_sync(function):
-    import json_plus
-    result = function()
+    function()
 
 
 from gluon.scheduler import Scheduler
-current.slugiot_scheduler = Scheduler(db, dict(run_procedure=run_procedure,
-                                               do_synchronization=scheduled_synchronize,
-                                               do_procedure_sync=proc_sync
-                                               ))
+current.slugiot_scheduler = Scheduler(ramdb, dict(run_procedure=run_procedure,
+                                                  do_synchronization=scheduled_synchronize,
+                                                  do_procedure_sync=proc_sync
+                                                  ))
 
 # For running the server with the scheduler:
 # --with-scheduler --scheduler=client

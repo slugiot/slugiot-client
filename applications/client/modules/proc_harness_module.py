@@ -5,8 +5,6 @@ import sys
 import requests
 import logging
 import os
-from string import ascii_letters, digits
-import slugiot_settings as ss
 from gluon.contrib.appconfig import AppConfig
 
 
