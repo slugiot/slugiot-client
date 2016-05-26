@@ -158,6 +158,11 @@ class ProcedureApi(object):
         ramdb((ramdb.procedure_state.procedure_id == str(self.module_name))).delete()
         ramdb.commit()
 
+        self.log_info("Removing scheduled task for the procedure")
+        ramdb = current.ramdb
+        ramdb((ramdb.scheduler_task.task_name == str(self.module_name))).delete()
+        ramdb((ramdb.procedure_state.procedure_id == str(self.module_name))).delete()
+        ramdb.commit()
 
     def get_setting(self, setting_name):
         """Retrieves a setting value from the database table settings.

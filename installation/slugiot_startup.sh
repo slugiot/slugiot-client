@@ -1,7 +1,7 @@
 #!usr/bin/env bash
 ### BEGIN INIT INFO
 # Provides:          web2py
-# Required-Start:    $local_fs
+# Required-Start:    $local_fs ramfs
 # Required-Stop:
 # Default-Start:     S
 # Default-Stop:         0 6
@@ -11,7 +11,7 @@
 PATH="/sbin:/bin:/usr/bin"
 PID_FILE=/var/run/web2py.pid
 USER=pi
-APPDIR=/home/pi/Documents
+APPDIR=/home/pi
 CMD=$APPDIR/slugiot-client/web2py.py
 PYTHON=/usr/bin/python
 PORT=8080
