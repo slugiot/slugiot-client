@@ -17,8 +17,9 @@ def _startup():
     start_time = datetime.datetime.now()
 
     # TODO - change database to one specific to scheuler (as per recommendation in web2py docs)
-    db(db.scheduler_task.task_name == 'do_procedure_sync').delete()
-    db(db.scheduler_task.task_name == 'do_synchronization').delete()
+    # If this delete() statement not commented out, the task would get queued and then failed.
+    #ramdb(ramdb.scheduler_task.task_name == 'do_procedure_sync').delete()
+    #ramdb(ramdb.scheduler_task.task_name == 'do_synchronization').delete()
 
     current.slugiot_scheduler.queue_task(
         task_name='do_procedure_sync',
@@ -30,7 +31,7 @@ def _startup():
         timeout=60,
         retry_failed=1
     )
-    current.db.commit()
+    current.ramdb.commit()
 
 
     current.slugiot_scheduler.queue_task(
@@ -40,14 +41,14 @@ def _startup():
         pvars={},
         repeats=1,  # If repeats=0 (unlimited), it would constantly fail.
         period=600,
-        timeout=60,
+        timeout=120,
         retry_failed=5
     )
-    current.db.commit()
+    current.ramdb.commit()
 
 
 
 def clear_all_tasks():
     """Here we clear all tasks"""
-    current.db(db.scheduler_task).delete()
-    current.db.commit()
+    current.ramdb(ramdb.scheduler_task).delete()
+    current.ramdb.commit()
