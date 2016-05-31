@@ -22,16 +22,12 @@
 
 import datetime
 
-############### Procedure Harness Table ###############
+######### SERVER -> CLIENT
 
-db.define_table('procedures',
-                Field('procedure_id', 'bigint', required=True),  # key
-                Field('last_update', 'datetime', default=datetime.datetime.utcnow(), required=True),
-                Field('name', 'string') # Name of procedure
-                )
-
-############### Procedure API Tables #################
-
+# The information below is synched server to client.  It does not change very often,
+# and it is crucial to have some of this information at startup (such as the device_id),
+# even if there is no internet connection to the device.
+# For this reason, the tables are on flash memory.
 
 # Synched server -> client (except for some special rows).
 db.define_table('settings',
@@ -41,22 +37,37 @@ db.define_table('settings',
                 Field('last_updated', 'datetime', default=datetime.datetime.utcnow(), update=datetime.datetime.utcnow())
                 )
 
-# Synched client -> server
-db.define_table('logs',
+db.define_table('procedures',
+                   Field('procedure_id', 'bigint', required=True),  # key
+                Field('last_update', 'datetime', default=datetime.datetime.utcnow(), required=True),
+                   Field('name', 'string')  # Name of procedure
+                   )
+
+db.define_table('synchronization_events',
+                   Field('table_name'),
+                   Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
+                   )
+
+######### CLIENT -> SERVER
+
+# Below is information that is synched client to server.
+# This information is kept in a ramdb, as the state can change quite often,
+# in order not to use up the flash memory on the client with too many writes.
+
+ramdb.define_table('logs',
                 Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
                 Field('procedure_id'),
                 Field('log_level', 'integer'),  # int, 0 = most important.
                 Field('log_message', 'text')
                 )
 
-# Synched client -> server
-db.define_table('outputs',
-                Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
-                Field('procedure_id'),
-                Field('name'),  # Name of variable
-                Field('output_value', 'text'),  # Json, short please
-                Field('tag')
-                )
+ramdb.define_table('outputs',
+                   Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
+                   Field('procedure_id'),
+                   Field('name'),  # Name of variable
+                   Field('output_value', 'text'),  # Json, short please
+                   Field('tag')
+                   )
 
 # Synched client -> server
 # modulename + name is a key (only one row for combination).
@@ -65,11 +76,6 @@ db.define_table('module_values',
                 Field('procedure_id'),
                 Field('name'),  # Name of variable
                 Field('module_value', 'text'),  # Json, short please
-                )
-
-db.define_table('synchronization_events',
-                Field('table_name'),
-                Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
                 )
 
 # State of the procedure when last run.

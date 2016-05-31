@@ -17,21 +17,27 @@ from gluon.contrib.appconfig import AppConfig
 ## once in production, remove reload=True to gain full speed
 myconf = AppConfig(reload=True)
 
-if not request.env.web2py_runtime_gae:
-    ## if NOT running on Google App Engine use SQLite or other DB
-    db = DAL(myconf.get('db.uri'),
-             pool_size = myconf.get('db.pool_size'),
-             migrate_enabled = myconf.get('db.migrate'),
+# This is the persistent database.
+db = DAL(myconf.get('db.uri'),
+         pool_size = myconf.get('db.pool_size'),
+         migrate_enabled = myconf.get('db.migrate'),
+         check_reserved = ['all'])
+# This is the volatile database.
+# We create it in two different ways, depending on whether we are
+# testing or on the actual device.
+import os
+if os.environ.get('SLUGIOT_TESTING') != 'y':
+    # We create it in the ram disk.
+    ramdb = DAL(myconf.get('ramdb.uri'),
+             pool_size = myconf.get('ramdb.pool_size'),
+             migrate_enabled = myconf.get('ramdb.migrate'),
              check_reserved = ['all'])
 else:
-    ## connect to Google BigTable (optional 'google:datastore://namespace')
-    db = DAL('google:datastore+ndb')
-    ## store sessions and tickets there
-    session.connect(request, response, db=db)
-    ## or store session in Memcache, Redis, etc.
-    ## from gluon.contrib.memdb import MEMDB
-    ## from google.appengine.api.memcache import Client
-    ## session.connect(request, response, db = MEMDB(Client()))
+    # We are just testing, we use simply another db.
+    ramdb = DAL(myconf.get('volatile_db.uri'),
+                pool_size=myconf.get('volatile_db.pool_size'),
+                migrate_enabled=myconf.get('volatile_db.migrate'),
+                check_reserved=['all'])
 
 ## by default give a view/generic.extension to all actions from localhost
 ## none otherwise. a pattern can be 'controller/function.extension'
@@ -92,6 +98,7 @@ logger.setLevel(logging.INFO)
 logger.info("====> Request: %r %r %r %r" % (request.env.request_method, request.env.path_info, request.args, request.vars))
 
 current.db = db
+current.ramdb = ramdb
 
 # Let's get the server URL.
 server_url = myconf.get('server.host')

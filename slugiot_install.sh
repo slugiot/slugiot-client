@@ -9,4 +9,9 @@ sudo chown root /etc/init.d/slugiot_startup
 sudo chmod u+x /etc/init.d/slugiot_startup
 sudo update-rc.d slugiot_startup defaults
 
+sudo cp ramfs.sh /etc/init.d/ramfs
+sudo chown root /etc/init.d/ramfs
+sudo chmod u+x /etc/init.d/ramfs
+sudo update-rc.d ramfs defaults
+
 . /etc/init.d/slugiot_startup start

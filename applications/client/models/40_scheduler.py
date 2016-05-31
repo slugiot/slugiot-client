@@ -55,7 +55,7 @@ def proc_sync(function):
 
 
 from gluon.scheduler import Scheduler
-current.slugiot_scheduler = Scheduler(db, dict(run_procedure=run_procedure,
+current.slugiot_scheduler = Scheduler(ramdb, dict(run_procedure=run_procedure,
                                                do_synchronization=scheduled_synchronize,
                                                do_procedure_sync=proc_sync
                                                ))
