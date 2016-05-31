@@ -17,7 +17,7 @@ def _startup():
                 request.env.HTTP_HOST.startswith('127')):
         raise (HTTP(403))
 
-    current.ramdb.scheduler_task._truncate()
+    current.ramdb.scheduler_task.truncate()
     current.ramdb.commit()
 
     proc_rows = db(db.procedures).select()
