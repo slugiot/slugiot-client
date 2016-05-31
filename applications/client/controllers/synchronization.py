@@ -22,7 +22,7 @@ def log_message():
         log_level = int(request.vars.log_level)
     import procedureapi
     api = procedureapi.ProcedureApi("Synchronization")
-    api.write_log(log_message, log_level)
+    api.log(log_message, log_level)
     return response.json({"log_message" : log_message})
 
 

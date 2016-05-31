@@ -10,7 +10,7 @@
 import slugiot_settings
 
 
-def _device_id_exists():
+def _get_device_id():
     """
     Check for device ID being present.
     It makes two checks:
@@ -19,9 +19,10 @@ def _device_id_exists():
     :return:
     :rtype:
     """
-    device_id_row = db(db.settings.setting_name == 'device_id').select().first()
-    device_id = device_id_row.setting_value if device_id_row is not None else None
-    return True if device_id is not None else False
+    device_id = slugiot_setup.settings.get_device_id()
+    # device_id_row = db(db.settings.setting_name == 'device_id').select().first()
+    # device_id = device_id_row.setting_value if device_id_row is not None else None
+    return device_id
 
 
 def index():
@@ -31,43 +32,28 @@ def index():
     Shows option to set/view a device ID based on whether the ID exists or not
     """
     # Check if settings exist already
-    if not _device_id_exists():
-        message = T('Welcome to SlugIOT Client. Please register device')
-        settings = A("Click here to initialize your device", _href=URL('default', 'settings', vars={'new': True}),
-                     _class='btn btn-primary')
-    else:
-        message = T('This device is registered')
-        settings = A("Click here to see/edit device settings", _href=URL('default', 'settings'),
-                     _class='btn btn-success')
-    return dict(message=message, settings=settings)
+    device_id = _get_device_id()
+    return dict(device_id=device_id)
 
 
 def settings():
     """
     Settings page for the device to set device ID.
     """
-    device_id_row = db(db.settings.setting_name == 'device_id').select().first()
-    device_id = device_id_row.setting_value if device_id_row is not None else None
-
-    # For new or edit option
-    if request.vars.new or request.vars.edit:
-        form = SQLFORM.factory(Field('device_id'))
-        edit_button = T("")
-        if device_id is not None:
-            form.vars.device_id = device_id
-
-        if form.process().accepted:
-            db.settings.update_or_insert(db.settings.setting_name == 'device_id',
-                                         setting_name='device_id',
-                                         setting_value=form.vars.device_id)
-
-            redirect(URL('default', 'index'))
-
-    # For view option
-    else:
-        form = H2("Device ID: ", str(device_id))
-        edit_button = A("Edit", _href=URL('default', 'settings', vars={'edit': True}), _class='btn btn-primary')
-
+    device_id = _get_device_id()
+    # If the device_id is None, we have to enter one.
+    # Otherwise, we offer a form, which is view-only in general,
+    # and can be turned into an edit form if needed.
+    request_edit = request.vars.edit == 'y'
+    is_edit = device_id is None or request_edit
+    form = SQLFORM.factory(Field('device_id', default=device_id), readonly=not is_edit)
+    if is_edit:
+        form.add_button('Cancel', URL('default', 'settings'), _class='btn btn-warning')
+    edit_button = None if is_edit else A(T('Edit'), _href=URL('default', 'settings', vars={'edit': 'y'}), _class='btn btn-primary')
+    form.vars.device_id = device_id
+    if form.process().accepted:
+        slugiot_setup.settings.set_device_id(form.vars.device_id)
+        redirect(URL('default', 'index'))
     return dict(form=form, edit_button=edit_button)
 
 @request.restful()
@@ -89,7 +75,7 @@ def initialization():
         return "Please configure your server_url field in applications/private/appconfig.ini"
 
     def GET(*args, **vars):
-        device_id = settings.get_device_id()
+        device_id = slugiot_setup.settings.get_device_id()
         if (device_id == None):
             return "Please POST to this url the desired identifier for your device with the 'device_id' parameter"
         return "Your device_id is: " + device_id
@@ -98,7 +84,7 @@ def initialization():
         if (vars == None or not vars.has_key('device_id')):
             return "Please POST to this url the desired identifier for your device with the 'device_id' parameter"
         device_id = vars['device_id']
-        settings.set_device_id(device_id)
+        slugiot_setup.settings.set_device_id(device_id)
         return "Your device_id has been set to: " + device_id
 
     return locals()
@@ -131,7 +117,7 @@ def download():
     allows downloading of uploaded files
     http://..../[app]/default/download/[filename]
     """
-    return response.download(request, db)
+    return response.download(request, ramdb)
 
 
 def call():

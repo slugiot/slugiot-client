@@ -1,7 +1,19 @@
 {{extend 'layout.html'}}
 
 <div id="container">
-
-    <h1 align="center">{{=message}}</h1>
-    <p align="center">{{=settings}}</p><br>
+  <div class="main_page">
+    <h1>Welcome to SlugIOT Client</h1>
+    {{if device_id is not None:}}
+        <p>This device is registered with the following id:</p>
+        <p>{{=device_id}}</p>
+        {{=A("Edit registration information", _href=URL('default', 'settings'),
+                     _class='btn btn-success')}}
+    {{else:}}
+        <p class="important">This device needs to be registered in order to be used.</p>
+        <p>Please go to the server, obtain a registration id, and
+        register this device.</p>
+          {{=A("Enter registration information", _href=URL('default', 'settings'),
+                     _class='btn btn-warning')}}
+    {{pass}}
+  </div>
 </div>

@@ -28,18 +28,17 @@ def _startup():
 
     start_time = datetime.datetime.now()
 
-
     current.slugiot_scheduler.queue_task(
         task_name='do_procedure_sync',
         function='do_procedure_sync',
         start_time=start_time,
         pvars={},
-        repeats=0,  # If repeats=0 (unlimited), it would constantly fail.
-        period=30,
-        timeout=60,
-        retry_failed=1
+        repeats=0,
+        period=20,
+        timeout=12,
+        retry_failed=0
     )
-    current.ramdb.commit();
+    current.ramdb.commit()
 
 
     current.slugiot_scheduler.queue_task(
@@ -47,13 +46,12 @@ def _startup():
         function='do_synchronization',
         start_time=start_time,
         pvars={},
-        repeats=1,  # If repeats=0 (unlimited), it would constantly fail.
-        period=600,
-        timeout=60,
-        retry_failed=5
+        repeats=0,
+        period=20,
+        timeout=12,
+        retry_failed=0
     )
-    current.ramdb.commit();
-
+    current.ramdb.commit()
 
 
 def clear_all_tasks():

@@ -11,6 +11,8 @@ class DeviceProdecure(Procedure):
         self.api.add_schedule(delay=10, class_name='DeviceProdecure', repeats=10, period_between_runs=86400)
 
     def run(self):
+        """Runs every time a schedule is triggered
+        Can accept parameters, but should have default values defined"""
         self.api.log_info("Look at me!  I am running! x = %d" % self.x)
         logger.error("Look at me!  I am running! x = %d" % self.x)
         self.x += 1

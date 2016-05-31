@@ -31,11 +31,11 @@ import datetime
 
 # Synched server -> client (except for some special rows).
 db.define_table('settings',
-                Field('procedure_id'), # Can be Null for device-wide settings.
+                   Field('procedure_id'),  # Can be Null for device-wide settings.
                 Field('setting_name'),
-                Field('setting_value'), # Encoded in json-plus.
+                   Field('setting_value'),  # Encoded in json-plus.
                 Field('last_updated', 'datetime', default=datetime.datetime.utcnow(), update=datetime.datetime.utcnow())
-                )
+                   )
 
 db.define_table('procedures',
                    Field('procedure_id', 'bigint', required=True),  # key
@@ -69,23 +69,14 @@ ramdb.define_table('outputs',
                    Field('tag')
                    )
 
-# Synched client -> server
-# modulename + name is a key (only one row for combination).
-db.define_table('module_values',
-                Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
-                Field('procedure_id'),
-                Field('name'),  # Name of variable
-                Field('module_value', 'text'),  # Json, short please
-                )
-
 # State of the procedure when last run.
 # Note: when we synch this, we always have to keep at least one entry.
-db.define_table('procedure_state',
-                Field('procedure_id'),
-                Field('class_name'), # Name of the class that run in the procedure.
-                Field('procedure_state', 'text'),
-                Field('time_stamp', 'datetime', default=datetime.datetime.utcnow())
-                )
+ramdb.define_table('procedure_state',
+                   Field('procedure_id'),
+                   Field('class_name'), # Name of the class that run in the procedure.
+                   Field('procedure_state', 'text'),
+                   Field('time_stamp', 'datetime', default=datetime.datetime.utcnow())
+                   )
 
 # initialize settings manager
 import slugiot_settings
@@ -94,7 +85,7 @@ settings = slugiot_settings.SlugIOTSettings()
 # Let's initialize the setup.
 import slugiot_setup
 slugiot_setup = slugiot_setup.SlugIOTSetup()
-slugiot_setup.db = db
+slugiot_setup.db = ramdb
 slugiot_setup.server_url = server_url
 slugiot_setup.settings = settings
 slugiot_setup.device_id = settings.get_device_id()

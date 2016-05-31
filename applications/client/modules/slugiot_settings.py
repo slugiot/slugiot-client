@@ -9,7 +9,8 @@ class SlugIOTSettings():
     """
     def get_setting_value(self, setting_name, procedure_id=None, default_value=None):
         db = current.db
-        value = db(db.settings.procedure_id == procedure_id).select(db.settings.setting_value, limitby=(0, 1))
+        value = db(db.settings.procedure_id == procedure_id and db.settings.setting_name == setting_name)\
+            .select(db.settings.setting_value, limitby=(0, 1))
 
         # there should only be one record (if any)
         for row in value:
