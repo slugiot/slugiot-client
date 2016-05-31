@@ -17,8 +17,8 @@ def _startup():
                 request.env.HTTP_HOST.startswith('127')):
         raise (HTTP(403))
 
-    current.ramdb.scheduler_task._truncate()
-    current.ramdb.commit()
+    ramdb.scheduler_task._truncate()
+    ramdb.commit()
 
     proc_rows = db(db.procedures).select()
     for row in proc_rows:
@@ -34,12 +34,12 @@ def _startup():
         function='do_procedure_sync',
         start_time=start_time,
         pvars={},
-        repeats=0,  # If repeats=0 (unlimited), it would constantly fail.
-        period=30,
-        timeout=60,
-        retry_failed=1
+        repeats=1,  # If repeats=0 (unlimited), it would constantly fail.
+        period=300,
+        timeout=30,
+        retry_failed=3
     )
-    current.ramdb.commit();
+    ramdb.commit();
 
 
     current.slugiot_scheduler.queue_task(
@@ -52,7 +52,7 @@ def _startup():
         timeout=60,
         retry_failed=5
     )
-    current.ramdb.commit();
+    ramdb.commit();
 
 
 
