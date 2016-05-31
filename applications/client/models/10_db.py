@@ -26,7 +26,10 @@ db = DAL(myconf.get('db.uri'),
 # We create it in two different ways, depending on whether we are
 # testing or on the actual device.
 import os
-if os.environ.get('SLUGIOT_TESTING') != 'y':
+
+is_testing = os.environ.get('SLUGIOT_TESTING') == 'y'
+
+if not is_testing:
     # We create it in the ram disk.
     ramdb = DAL(myconf.get('ramdb.uri'),
              pool_size = myconf.get('ramdb.pool_size'),

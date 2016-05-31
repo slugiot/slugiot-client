@@ -3,6 +3,7 @@ import datetime
 import json_plus
 import logging
 from gluon import current
+import inspect
 
 class Procedure(json_plus.Serializable):
     """"This is the base class of all procedures.
@@ -42,37 +43,37 @@ class ProcedureApi(object):
         param name : Name of the output
         param data : The value of the output
         Param tag: This is the ID of the sensor (or additional data to differentiate the outputs)"""
-        db = current.db
+        ramdb = current.ramdb
         timestamp = timestamp or datetime.datetime.utcnow()
-        db.outputs.insert(procedure_id=self.module_name,
+        ramdb.outputs.insert(procedure_id=self.module_name,
                           name=name,
                           output_value=json_plus.Serializable.dumps(data),
                           time_stamp=timestamp,
                           tag=tag)
-        db.commit()
+        ramdb.commit()
 
     def write_outputs(self, data, tag=None):
         """ This write the values and the tag to the outputs table.
         param data : dict of key/value pairs to be written to the table. All pairs will have the same timestamp
         Param tag: This is the ID of the sensor (or additional data to differentiate the outputs)"""
 
-        db = current.db
+        ramdb = current.ramdb
         time_now = datetime.datetime.utcnow()
         for name, data in data.iteritems():
             self.write_output(name, data, tag=tag, timestamp=time_now)
-        db.commit()
+        ramdb.commit()
 
     def log(self, log_text, log_level=constants.LogLevel.INFO):
         # Luca: Can you use the LogLevel.INFO defined
         """Writes a log message to the logs table
         param log_text : message to be logged
         param log_level : 0 for error, 1 for warning, 2 for info, 3 for debug """
-        db = current.db
-        db.logs.insert(time_stamp=datetime.datetime.utcnow(),
+        ramdb = current.ramdb
+        ramdb.logs.insert(time_stamp=datetime.datetime.utcnow(),
                        procedure_id=self.module_name,
                        log_level=log_level,
                        log_message=log_text)
-        db.commit()
+        ramdb.commit()
 
     # Useful shorthands.
     def log_debug(self, s):
@@ -91,7 +92,7 @@ class ProcedureApi(object):
         return self.log(s, log_level=constants.LogLevel.CRITICAL)
 
     def add_schedule(self,
-                     class_name='DeviceProdecure',
+                     class_name=None,
                      function_args=[],
                      delay=0,
                      start_time=None,
@@ -116,36 +117,52 @@ class ProcedureApi(object):
         """
         logger = logging.getLogger("web2py.app.client")
         logger.setLevel(logging.INFO)
-        logger.info("Adding scheduled task for the procedure")
+        logger.info("Adding scheduled task for the procedure %s" % self.module_name)
+        self.log_info("Adding scheduled task for the procedure %s" % self.module_name)
 
         start_time = start_time or datetime.datetime.now()
-        start_time += datetime.timedelta(seconds=10)
+        start_time += datetime.timedelta(seconds=delay)
 
+        mod_name = __import__("procedures." + self.module_name, fromlist=[''])
+        procedure_class_name = inspect.getmembers(mod_name, inspect.isclass)
+        procedure_class_name = [cl_name for cl_name, c in procedure_class_name if
+                                (issubclass(c, mod_name.Procedure) & (cl_name != Procedure.__name__))]
+        class_name = class_name or procedure_class_name[0]
+
+        start_time += datetime.timedelta(seconds=10)
         logger.info("start time: " + str(start_time))
 
         current.slugiot_scheduler.queue_task(
             task_name=str(self.module_name),
             function='run_procedure',
-            pvars={'module_name': self.module_name, 'class_name': class_name, 'function_args': function_args},
+            pvars={'module_name': self.module_name, 'class_name': str(class_name), 'function_args': function_args},
             repeats=repeats,
             period=period_between_runs,
             start_time=start_time,
             stop_time=stop_time,
             timeout=timeout,
             retry_failed=num_retries)
-        current.db.commit()
+        current.ramdb.commit()
 
-        logger.info("schedule should have been added to task table")
 
     def remove_schedule(self):
         """Deletes the existing schedule for this procedure
         Also deletes the procedure state"""
         logger = logging.getLogger("web2py.app.client")
         logger.setLevel(logging.INFO)
-        logger.info("Removing scheduled task for the procedure")
+        logger.info("Removing scheduled task for the procedure %s" % self.module_name)
 
-        self.log_info("Removing scheduled task for the procedure")
-        db = current.db
-        db((db.scheduler_task.task_name == str(self.module_name))).delete()
-        db((db.procedure_state.procedure_id == str(self.module_name))).delete()
-        db.commit()
+        self.log_info("Removing scheduled task for the procedure %s" % self.module_name)
+        ramdb = current.ramramdb
+        ramdb((ramdb.scheduler_task.task_name == str(self.module_name))).delete()
+        ramdb((ramdb.procedure_state.procedure_id == str(self.module_name))).delete()
+        ramdb.commit()
+
+    def get_setting(self, setting_name):
+        """Retrieves a setting value from the database table settings.
+        Returns None if the setting does not exist
+        parameter setting_name : The settings name whose value needs to be retrieved"""
+        import slugiot_settings
+        settings = slugiot_settings.SlugIOTSettings()
+        return settings.get_setting_value(setting_name=setting_name, procedure_id=self.module_name)
+

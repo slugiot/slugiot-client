@@ -17,8 +17,8 @@ def _startup():
                 request.env.HTTP_HOST.startswith('127')):
         raise (HTTP(403))
 
-    ramdb.scheduler_task._truncate()
-    ramdb.commit()
+    current.ramdb.scheduler_task.truncate()
+    current.ramdb.commit()
 
     proc_rows = db(db.procedures).select()
     for row in proc_rows:
@@ -27,7 +27,6 @@ def _startup():
 
 
     start_time = datetime.datetime.now()
-
 
     current.slugiot_scheduler.queue_task(
         task_name='do_procedure_sync',
@@ -39,7 +38,7 @@ def _startup():
         timeout=30,
         retry_failed=3
     )
-    ramdb.commit();
+    current.ramdb.commit()
 
 
     current.slugiot_scheduler.queue_task(
@@ -52,8 +51,7 @@ def _startup():
         timeout=60,
         retry_failed=5
     )
-    ramdb.commit();
-
+    current.ramdb.commit()
 
 
 def clear_all_tasks():
