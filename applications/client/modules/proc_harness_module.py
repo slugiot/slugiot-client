@@ -113,10 +113,10 @@ def insert_new_procedure(procedure_data, procedure_names, server_status):
 
     logger.debug("INSIDE INSERT FUNCTION")
 
-    for proc, name in procedure_names.iteritems():
+    for proc in procedure_names.keys():
         data = procedure_data[proc]
 
-        logger.debug(str(proc) + " " + str(name) + " " + str(data) + " " + str(server_status[proc]))
+        logger.debug(str(proc) + " " + str(proc) + " " + str(data) + " " + str(server_status[proc]))
 
         proc_directory = "applications/client/modules/procedures"
         init_file_name = os.path.join(proc_directory, "__init__.py")
@@ -128,14 +128,14 @@ def insert_new_procedure(procedure_data, procedure_names, server_status):
                 os.utime(init_file_name, None)
 
         # Storing procedure data as a file
-        file_name = os.path.join(proc_directory, name)
+        file_name = os.path.join(proc_directory, proc)
         if file_name.find(".py") == -1:
             file_name = file_name + ".py"
         with open(file_name, "wb") as procedure_file:
             procedure_file.write(data)
 
         # When procedures get updated old schedules should be removed so new schedules can be scheduled
-        api = procedureapi.ProcedureApi(name)
+        api = procedureapi.ProcedureApi(proc)
         api.remove_schedule()
         api.add_schedule()
 
@@ -144,7 +144,7 @@ def insert_new_procedure(procedure_data, procedure_names, server_status):
         proc_table.update_or_insert(proc_table.procedure_id == proc,
                                     procedure_id = proc,
                                     last_update = server_status[proc],
-                                    name = name)
+                                    name=proc)
         db.commit()
 
         logger.info("procedure table should be updated")
