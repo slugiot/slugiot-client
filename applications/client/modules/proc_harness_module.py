@@ -23,7 +23,7 @@ def do_procedure_sync():
     server_url = myconf.get('server.host')
 
     # Get device id from settings
-    device_id = "test" #ss.get_device_id()
+    device_id = current.slugiot_setup.device_id
 
     # Request dictionary {procedure_id: last_updated_date} from server
     call_url = server_url + '/proc_harness/get_procedure_status/' + str(device_id)
@@ -145,6 +145,7 @@ def insert_new_procedure(procedure_data, procedure_names, server_status):
                                     procedure_id = proc,
                                     last_update = server_status[proc],
                                     name = name)
+        db.commit()
 
         logger.info("procedure table should be updated")
 

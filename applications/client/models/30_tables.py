@@ -95,6 +95,6 @@ slugiot_setup.db = ramdb
 slugiot_setup.server_url = server_url
 slugiot_setup.settings = settings
 slugiot_setup.device_id = settings.get_device_id()
-
+current.slugiot_setup = slugiot_setup
 
 
