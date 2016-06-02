@@ -11,7 +11,7 @@ import proc_harness_module
 sync_lock = threading.Lock()
 
 
-def synch_all_c2s(setup_info, tables=["logs", "outputs", "module_values"]):
+def synch_all_c2s(setup_info, tables=["logs", "outputs"]):
     return all([synchronize_c2s(setup_info, t) for t in tables])
 
 def synchronize_c2s(setup_info, table_name):

@@ -4,6 +4,7 @@
 # the enqueuing of things happen somewhere else.
 import json_plus
 from procedureapi import ProcedureApi
+import proc_harness_module
 
 def run_procedure(module_name, class_name, function_args):
     # Builds the API.
@@ -49,9 +50,8 @@ def scheduled_synchronize():
     slugiot_synchronization.synchronize_settings(slugiot_setup)
 
 
-def proc_sync(function):
-    function()
-
+def proc_sync():
+    proc_harness_module.do_procedure_sync()
 
 from gluon.scheduler import Scheduler
 current.slugiot_scheduler = Scheduler(ramdb, dict(run_procedure=run_procedure,
