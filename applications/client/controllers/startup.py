@@ -6,13 +6,9 @@ db = current.db
 ramdb = current.ramdb
 
 def _startup():
-    """NB: procedureapi.add_schedule() could have been used to add sync schedules
-    by passing a dummy procedure name, but this is the only place where scheduling
-    of these functions occurs, and it seemed safer to create tasks directly.  Also,
-    since this is the only place at which the task is scheduled, it is safe to
+    """Since this is the only place at which the task is scheduled, it is safe to
     simply delete and recreate tasks at each startup (the parameters don't change)"""
 
-    # TODO - test this code to a check against external calls.  Also check on the underscore
     if not (request.env.HTTP_HOST.startswith('localhost') |
                 request.env.HTTP_HOST.startswith('127')):
         raise (HTTP(403))

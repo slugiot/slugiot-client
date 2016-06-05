@@ -34,15 +34,16 @@ To run the code in test mode, there are two ways.
 ### Running in testing mode
 
 In this mode, SlugIOT does not rely on a RAM file system (you might be running this on
-your laptop after all).  Run it as follows (scheduler run as separate process due to iOS bug):
+your laptop after all).  Run it from terminal as follows (Note: scheduler run 
+as separate process due to iOS/PyCharm bug):
 
-    SLUGIOT_TESTING=y
+    SLUGIOT_TESTING='y'
+    export SLUGIOT_TESTING
     python web2py.py -e -p 8600 -i 0.0.0.0 -K client -X 
     
-where 8600 is the port at which the process should be running (feel free to change it).  To
-avoid bug that causes Python to crash, do not set password so that gui will launch (specify
-it there) instead of command line.  Once it is up and running, 
-inject a job in the scheduler via:
+where 8600 is the port at which the process should be running (feel free to change it).  
+To avoid bug that causes Python to crash, do not set password so that gui will launch (specify
+it there) instead of command line.  Once it is up and running, inject a job in the scheduler via:
 
     curl http://localhost:8600/startup/_startup.html
 
@@ -50,8 +51,9 @@ inject a job in the scheduler via:
 
 If you have been testing on the same machine, remember to do
 
-    SLUGIOT_TESTING=n
+    SLUGIOT_TESTING='n'
+    export SLUGIOT_TESTING
     
 Then, start SlugIOT via:
 
-    sudo /etc/init.d/slugiot_startup start
+    sudo sh /etc/init.d/slugiot_startup restart

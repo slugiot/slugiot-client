@@ -14,4 +14,9 @@ sudo chown root /etc/init.d/ramfs
 sudo chmod u+x /etc/init.d/ramfs
 sudo update-rc.d ramfs defaults
 
-. /etc/init.d/slugiot_startup start
+# Manually start them instead of reboot
+sudo sh /etc/init.d/ramfs start
+sudo sh /etc/init.d/slugiot_startup start
+
+# Check status of services
+sudo service web2py status -l

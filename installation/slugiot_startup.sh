@@ -14,13 +14,14 @@ USER=pi
 APPDIR=/home/pi
 CMD=$APPDIR/slugiot-client/web2py.py
 PYTHON=/usr/bin/python
-PORT=8080
+PORT=8600
 PASS=password
 APP=client
 
 . /lib/lsb/init-functions
 
-# TODO - Remove -e flag when done testing.  Better: allow to run this script with debug option.
+# TODO - Remove -e flag when done testing.
+# TODO - Better: allow to run this script with debug option (test mode)
 do_start () {
     /sbin/start-stop-daemon --start --chuid $USER -d $APPDIR --background -v \
         --user $USER --pidfile $PID_FILE --make-pidfile --exec $PYTHON \

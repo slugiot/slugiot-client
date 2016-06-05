@@ -78,6 +78,11 @@ ramdb.define_table('procedure_state',
                    Field('time_stamp', 'datetime', default=datetime.datetime.utcnow())
                    )
 
+ramdb.define_table('synchronization_events',
+                Field('table_name'),
+                Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
+                )
+
 # initialize settings manager
 import slugiot_settings
 settings = slugiot_settings.SlugIOTSettings()
