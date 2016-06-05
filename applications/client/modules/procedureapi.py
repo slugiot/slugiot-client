@@ -153,7 +153,7 @@ class ProcedureApi(object):
         logger.info("Removing scheduled task for the procedure %s" % self.module_name)
 
         self.log_info("Removing scheduled task for the procedure %s" % self.module_name)
-        ramdb = current.ramramdb
+        ramdb = current.ramdb
         ramdb((ramdb.scheduler_task.task_name == str(self.module_name))).delete()
         ramdb((ramdb.procedure_state.procedure_id == str(self.module_name))).delete()
         ramdb.commit()

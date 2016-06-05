@@ -8,7 +8,7 @@ class DeviceProdecure(Procedure):
     def init(self):
         self.x = 0
         # Runs for 10 days, once per day.
-        self.api.add_schedule(delay=10, class_name='DeviceProdecure', repeats=10, period_between_runs=86400)
+        self.api.add_schedule(delay=10, repeats=10, period_between_runs=86400)
 
     def run(self):
         """Runs every time a schedule is triggered

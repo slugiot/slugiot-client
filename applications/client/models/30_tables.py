@@ -79,9 +79,10 @@ ramdb.define_table('procedure_state',
                    )
 
 ramdb.define_table('synchronization_events',
-                Field('table_name'),
-                Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
-                )
+                   Field('table_name'),
+                   Field('time_stamp', 'datetime', default=datetime.datetime.utcnow()),
+                   )
+
 
 # initialize settings manager
 import slugiot_settings
@@ -94,6 +95,6 @@ slugiot_setup.db = ramdb
 slugiot_setup.server_url = server_url
 slugiot_setup.settings = settings
 slugiot_setup.device_id = settings.get_device_id()
-
+current.slugiot_setup = slugiot_setup
 
 
