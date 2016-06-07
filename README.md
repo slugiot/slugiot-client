@@ -14,14 +14,25 @@ The --recursive option is important, or else you will be missing PyDAL, the data
 
 The installation scripts can be found in the installation directory.
 
+Note: if you need to access the client admin area (recommended), then you 
+will first need to enable ssl on the device using these or similar commands:
+    
+    cd /home/pi/slugiot-client
+    openssl genrsa -out server.key 2048
+    openssl req -new -key server.key -out server.csr
+    openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
+
+You must then also uncomment the following parameters: '-c server.crt -k server.key'
+in the do_startup code block in slugiot_startup.sh prior to running slugiot_install.sh
+
 The script slugiot_install.sh enters the startup script into the server initialization.
 
     cd installation
     sh ./slugiot_install.sh
     
-The startup script safely starts the webserver and queues the sync tasks in scheduler.
-The script currently works for Raspberry Pi; you need to change the location of the code
-if you install the code on other architectures. 
+The startup script (which it runs) safely starts the webserver and queues the 
+sync tasks in scheduler.  The script currently works for Raspberry Pi; you 
+need to change the location of the code if you install the code on other architectures. 
 
 The startup scripts also create a ram disk, mounted at /ramfs. 
 You need this ram disk in order to run SlugIOT client: a short-term database is created

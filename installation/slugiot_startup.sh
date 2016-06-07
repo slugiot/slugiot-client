@@ -20,12 +20,15 @@ APP=client
 
 . /lib/lsb/init-functions
 
-# TODO - Remove -e flag when done testing.
-# TODO - Better: allow to run this script with debug option (test mode)
+# Note: Remove -e flag when done testing.
+# Note: uncomment cert and key flags if ssl enabled (will return http status 400 for self signed)
+# TODO - Allow to run this script with debug option
+# TODO - Check errors being generated on RPi device
 do_start () {
     /sbin/start-stop-daemon --start --chuid $USER -d $APPDIR --background -v \
         --user $USER --pidfile $PID_FILE --make-pidfile --exec $PYTHON \
-        --startas $PYTHON -- $CMD -e -a $PASS -p $PORT -K $APP -i 0.0.0.0 -X
+        --startas $PYTHON -- $CMD -a $PASS -p $PORT -K $APP \
+        -i 0.0.0.0 -X -e #-c server.crt -k server.key
     log_success_msg "Started web2py!"
 }
 
@@ -58,10 +61,10 @@ do_startup(){
       if [ $status -ne 0 && $rep -ne 200 ]; then
         log_warning_msg "Failed to startup $APP completely; http_status = $rep.  Check it!!!"
       else
-        # TODO - Final checks per _startup() controller.  E.g., sqlite3 util check scheduler created.
         log_success_msg "Completed startup of $APP with http_status = $rep "
       fi
-      log_success_msg "Access admin area using http://$pyip:$PORT/ "
+      log_success_msg "Access site using http://$pyip:$PORT/"
+      log_success_msg "Access site admin (requres ssl) area using https://$pyip:$PORT/admin"
     fi
 }
 
@@ -69,14 +72,13 @@ do_startup(){
 case "$1" in
   start)
         do_start
-        sleep 15
+        sleep 5
         do_startup
         ;;
   restart|reload|force-reload)
         do_stop || log_failure_msg "Not running"
         do_start
-        sleep 15
-        do_startup
+        sleep 5
         ;;
   stop|status)
         do_stop
