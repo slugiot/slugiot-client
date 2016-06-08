@@ -44,18 +44,18 @@ def run_procedure(module_name, class_name, function_args):
     ramdb.commit()
 
 
-def scheduled_synchronize():
+def do_synchronization():
     import slugiot_synchronization
     slugiot_synchronization.synch_all_c2s(slugiot_setup)
     slugiot_synchronization.synchronize_settings(slugiot_setup)
-
+    ramdb.commit()
 
 def proc_sync():
     proc_harness_module.do_procedure_sync()
 
 from gluon.scheduler import Scheduler
 current.slugiot_scheduler = Scheduler(ramdb, dict(run_procedure=run_procedure,
-                                                  do_synchronization=scheduled_synchronize,
+                                                  do_synchronization=do_synchronization,
                                                   do_procedure_sync=proc_sync
                                                   ))
 

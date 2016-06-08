@@ -5,6 +5,7 @@ import traceback
 import threading
 from datetime import datetime;
 import requests
+from gluon import current
 #from dateutil.parser import parse as parse_date # (not used, causing error in production)
 import proc_harness_module
 
@@ -18,9 +19,12 @@ def synchronize_c2s(setup_info, table_name):
     """
     This function syncs the information in table_name to the corresponding server table.
     """
+    logger = current.logger
     with sync_lock:
         db = setup_info.db
         rows = get_data_for_synchronization(setup_info, table_name)
+        logger.info("We got %d rows to synch" % len(rows))
+        print "we got rows to synch:", len(rows)
         if len(rows) > 0:
             try:
                 # Let's get the device id.

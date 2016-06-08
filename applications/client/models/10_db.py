@@ -96,6 +96,7 @@ FORMAT = "%(asctime)s %(levelname)s %(process)s %(thread)s %(funcName)s():%(line
 logging.basicConfig(stream=sys.stderr)
 logger = logging.getLogger(request.application)
 logger.setLevel(logging.INFO)
+current.logger = logger
 
 # Let's log the request.
 logger.info("====> Request: %r %r %r %r" % (request.env.request_method, request.env.path_info, request.args, request.vars))
