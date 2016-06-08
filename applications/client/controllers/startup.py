@@ -13,13 +13,18 @@ def _startup():
                 request.env.HTTP_HOST.startswith('127')):
         raise (HTTP(403))
 
+    # We remove all the schedules...
     current.ramdb.scheduler_task.truncate()
+    # ... and all the procedure states, so the procedures have to run their
+    # init() methods and re-create their appropriate schedules.
+    current.ramdb.procedure_state.truncate()
     current.ramdb.commit()
 
     proc_rows = db(db.procedures).select()
     for row in proc_rows:
         api = procedureapi.ProcedureApi(row.name)
         api.add_schedule()
+        logger.info("Added schedule for procedure %r", row.name)
 
 
     start_time = datetime.datetime.now()
@@ -29,10 +34,10 @@ def _startup():
         function='do_procedure_sync',
         start_time=start_time,
         pvars={},
-        repeats=1,  # If repeats=0 (unlimited), it would constantly fail.
-        period=300,
-        timeout=30,
-        retry_failed=3
+        repeats=100000000000000,
+        period=20,
+        timeout=15,
+        retry_failed=0
     )
     current.ramdb.commit()
 
@@ -42,10 +47,10 @@ def _startup():
         function='do_synchronization',
         start_time=start_time,
         pvars={},
-        repeats=1,  # If repeats=0 (unlimited), it would constantly fail.
-        period=600,
-        timeout=60,
-        retry_failed=5
+        repeats=100000000000000,
+        period=20,
+        timeout=15,
+        retry_failed=0
     )
     current.ramdb.commit()
 
