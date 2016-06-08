@@ -18,8 +18,6 @@ sudo chown root /etc/init.d/ramfs
 sudo chmod u+x /etc/init.d/ramfs
 sudo update-rc.d -f ramfs defaults
 
-#sudo update-rc.d ramfs enable
-
 # Manually start them instead of reboot
 sudo sh /etc/init.d/ramfs restart
 sleep 1
