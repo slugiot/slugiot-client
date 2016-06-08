@@ -18,9 +18,9 @@ Note: if you need to access the client admin area (recommended), then you
 will first need to enable ssl on the device using these or similar commands:
     
     cd /home/pi/slugiot-client
-    openssl genrsa -out server.key 2048
-    openssl req -new -key server.key -out server.csr
-    openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
+    sudo openssl genrsa -out server.key 2048
+    sudo openssl req -new -key server.key -out server.csr
+    sudo openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
 
 You must then also uncomment the following parameters: '-c server.crt -k server.key'
 in the do_startup code block in slugiot_startup.sh prior to running slugiot_install.sh
@@ -68,3 +68,13 @@ If you have been testing on the same machine, remember to do
 Then, start SlugIOT via:
 
     sudo sh /etc/init.d/slugiot_startup restart
+
+Note: The default server host address is for localhost, as defined in the 
+appconfig.ini file.  In production this address will likely need to be changed
+since the server is not meant to be run on the client device.
+
+    cd ~
+    nano ./slugiot-client/applications/client/private/appconfig.ini
+
+Enter in the domain name for the server or the server ip from inet shown
+for en0 in display from running 'ifconfig' on server.
