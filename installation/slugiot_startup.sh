@@ -3,8 +3,8 @@
 # Provides:          web2py
 # Required-Start:    $local_fs ramfs
 # Required-Stop:
-# Default-Start:     S
-# Default-Stop:         0 6
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
 # Short-Description: Starts local web2py server, with scheduler running in background for APP.
 ### END INIT INFO
 
@@ -79,6 +79,7 @@ case "$1" in
         do_stop || log_failure_msg "Not running"
         do_start
         sleep 5
+        do_startup
         ;;
   stop|status)
         do_stop
@@ -88,3 +89,5 @@ case "$1" in
         exit 3
         ;;
 esac
+
+exit 0
