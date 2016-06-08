@@ -5,7 +5,7 @@ import traceback
 import threading
 from datetime import datetime;
 import requests
-from dateutil.parser import parse as parse_date
+#from dateutil.parser import parse as parse_date # (not used, causing error in production)
 import proc_harness_module
 
 sync_lock = threading.Lock()

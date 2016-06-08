@@ -3,8 +3,8 @@
 # Provides:          web2py
 # Required-Start:    $local_fs ramfs
 # Required-Stop:
-# Default-Start:     S
-# Default-Stop:         0 6
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
 # Short-Description: Starts local web2py server, with scheduler running in background for APP.
 ### END INIT INFO
 
@@ -14,17 +14,18 @@ USER=pi
 APPDIR=/home/pi
 CMD=$APPDIR/slugiot-client/web2py.py
 PYTHON=/usr/bin/python
-PORT=8080
+PORT=8600
 PASS=password
 APP=client
 
 . /lib/lsb/init-functions
 
-# TODO - Remove -e flag when done testing.  Better: allow to run this script with debug option.
+# TODO - Use SLUGIOT_TESTING env variable to start with or without ssl depending 
 do_start () {
     /sbin/start-stop-daemon --start --chuid $USER -d $APPDIR --background -v \
         --user $USER --pidfile $PID_FILE --make-pidfile --exec $PYTHON \
-        --startas $PYTHON -- $CMD -e -a $PASS -p $PORT -K $APP -i 0.0.0.0 -X
+        --startas $PYTHON -- $CMD -e -a $PASS -p $PORT -K $APP \
+	-i 0.0.0.0 -X -c server.crt -k server.key
     log_success_msg "Started web2py!"
 }
 
@@ -51,8 +52,10 @@ do_startup(){
       exit 1
     else
       log_success_message "Connection to client succeeded.  Begin call to _startup() from localhost..."
-      httpUrl="http://127.0.0.1:$PORT/startup/_startup.html"
-      rep=$(curl -o /dev/null --silent --head --write-out '%{http_code}\n' $httpUrl)
+      # This url must be changed to https when using in production (ssl required for admin in web2py) 
+      httpUrl="https://127.0.0.1:$PORT/startup/_startup.html"
+      # TODO - improve to allow removal of --insecure workaround (presently fails without it)
+      rep=$(curl -o /dev/null --insecure --silent --head --write-out '%{http_code}\n' $httpUrl)
       status=$?
       if [ $status -ne 0 && $rep -ne 200 ]; then
         log_warning_msg "Failed to startup $APP completely; http_status = $rep.  Check it!!!"

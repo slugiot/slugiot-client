@@ -14,14 +14,25 @@ The --recursive option is important, or else you will be missing PyDAL, the data
 
 The installation scripts can be found in the installation directory.
 
+Note: if you need to access the client admin area (recommended), then you 
+will first need to enable ssl on the device using these or similar commands:
+    
+    cd /home/pi/slugiot-client
+    sudo openssl genrsa -out server.key 2048
+    sudo openssl req -new -key server.key -out server.csr
+    sudo openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
+
+You must then also uncomment the following parameters: '-c server.crt -k server.key'
+in the do_startup code block in slugiot_startup.sh prior to running slugiot_install.sh
+
 The script slugiot_install.sh enters the startup script into the server initialization.
 
     cd installation
     sh ./slugiot_install.sh
     
-The startup script safely starts the webserver and queues the sync tasks in scheduler.
-The script currently works for Raspberry Pi; you need to change the location of the code
-if you install the code on other architectures. 
+The startup script (which it runs) safely starts the webserver and queues the 
+sync tasks in scheduler.  The script currently works for Raspberry Pi; you 
+need to change the location of the code if you install the code on other architectures. 
 
 The startup scripts also create a ram disk, mounted at /ramfs. 
 You need this ram disk in order to run SlugIOT client: a short-term database is created
@@ -34,15 +45,16 @@ To run the code in test mode, there are two ways.
 ### Running in testing mode
 
 In this mode, SlugIOT does not rely on a RAM file system (you might be running this on
-your laptop after all).  Run it as follows (scheduler run as separate process due to iOS bug):
+your laptop after all).  Run it from terminal as follows (Note: scheduler run 
+as separate process due to iOS/PyCharm bug):
 
-    SLUGIOT_TESTING=y
+    SLUGIOT_TESTING='y'
+    export SLUGIOT_TESTING
     python web2py.py -e -p 8600 -i 0.0.0.0 -K client -X 
     
-where 8600 is the port at which the process should be running (feel free to change it).  To
-avoid bug that causes Python to crash, do not set password so that gui will launch (specify
-it there) instead of command line.  Once it is up and running, 
-inject a job in the scheduler via:
+where 8600 is the port at which the process should be running (feel free to change it).  
+To avoid bug that causes Python to crash, do not set password so that gui will launch (specify
+it there) instead of command line.  Once it is up and running, inject a job in the scheduler via:
 
     curl http://localhost:8600/startup/_startup.html
 
@@ -50,8 +62,19 @@ inject a job in the scheduler via:
 
 If you have been testing on the same machine, remember to do
 
-    SLUGIOT_TESTING=n
+    SLUGIOT_TESTING='n'
+    export SLUGIOT_TESTING
     
 Then, start SlugIOT via:
 
-    sudo /etc/init.d/slugiot_startup start
+    sudo sh /etc/init.d/slugiot_startup restart
+
+Note: The default server host address is for localhost, as defined in the 
+appconfig.ini file.  In production this address will likely need to be changed
+since the server is not meant to be run on the client device.
+
+    cd ~
+    nano ./slugiot-client/applications/client/private/appconfig.ini
+
+Enter in the domain name for the server or the server ip from inet shown
+for en0 in display from running 'ifconfig' on server.
